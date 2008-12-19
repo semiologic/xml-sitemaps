@@ -56,6 +56,8 @@ class sitemap_xml
 		$this->pages();
 		$this->attachments();
 		$this->posts();
+		#$this->categories();
+		#$this->tags();
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		
@@ -409,14 +411,17 @@ class sitemap_xml
 			case 'yearly':
 				$post_date = "CAST(DATE_FORMAT(posts.post_date, '%Y-00-00') AS DATE)";
 				$now = "CAST(DATE_FORMAT(NOW(), '%Y-00-00') AS DATE)";
+				$interval = 'YEAR';
 				break;
 			case 'monthly':
 				$post_date = "CAST(DATE_FORMAT(posts.post_date, '%Y-%m-00') AS DATE)";
-				$now = "CAST(DATE_FORMAT(NOW(), '%Y-00-00') AS DATE)";
+				$now = "CAST(DATE_FORMAT(NOW(), '%Y-%m-00') AS DATE)";
+				$interval = 'MONTH';
 				break;
 			case 'daily':
 				$post_date = "CAST(posts.post_date AS DATE)";
-				$now = "CAST(DATE_FORMAT(NOW(), '%Y-00-00') AS DATE)";
+				$now = "CAST(NOW() AS DATE)";
+				$interval = 'DAY';
 				break;
 			}
 			
@@ -437,7 +442,7 @@ class sitemap_xml
 				ON		revisions.post_parent = posts.ID
 				AND		revisions.post_type = 'revision'
 				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
-				AND		( $now = $post_date )
+				AND		DATE_SUB($now, INTERVAL 1 $interval) >= $post_date
 				WHERE	posts.post_type = 'post'
 				AND		posts.post_status = 'publish'
 				AND		posts.post_password = ''
