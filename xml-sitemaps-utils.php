@@ -388,6 +388,16 @@ class sitemap_xml
 	
 	
 	#
+	# archives()
+	#
+	
+	function archives()
+	{
+		
+	} # archives()
+	
+	
+	#
 	# open()
 	#
 	
@@ -396,22 +406,6 @@ class sitemap_xml
 		if ( isset($this->fp) ) fclose($this->fp);
 		
 		if ( !( $this->fp = fopen($this->file, 'w+') ) ) return false;
-		
-		# get exclusive lock
-		$locked = false;
-		$now = microtime();
-		
-		do {
-			$locked = flock($this->fp, LOCK_EX);
-			if ( !$locked ) usleep(round(rand(0, 100)*1000));
-		} while ( !$locked && ( ( microtime() - $now ) < 1000 ) );
-		
-		if ( !$locked )
-		{
-			fclose($this->fp);
-			
-			return false;
-		}
 		
 		$o = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
 			. ( xml_sitemaps_debug
