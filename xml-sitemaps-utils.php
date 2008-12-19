@@ -84,7 +84,7 @@ class sitemap_xml
 					THEN
 						0
 					ELSE
-						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
 						/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
 					END as changefreq
 			FROM	$wpdb->posts as posts
@@ -133,7 +133,7 @@ class sitemap_xml
 					THEN
 						0
 					ELSE
-						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
 						/ COUNT(DISTINCT CAST(posts.post_date AS DATE))
 					END as changefreq
 			FROM	$wpdb->posts as posts
@@ -430,7 +430,7 @@ class sitemap_xml
 						THEN
 							0
 						ELSE
-							DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
 							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
 						END as changefreq,
 						COUNT(DISTINCT posts.ID) as num_posts
