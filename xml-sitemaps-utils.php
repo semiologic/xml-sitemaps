@@ -4,8 +4,8 @@ class sitemap_xml
 	var $file;
 	var $fp;
 	
-	var $front_page_id = false;
-	var $blog_page_id = false;
+	var $front_page_id;
+	var $blog_page_id;
 	var $posts_per_page;
 	
 	
@@ -18,16 +18,6 @@ class sitemap_xml
 		$this->file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
 		register_shutdown_function(array(&$this, 'close'));
-		
-		# static front page
-		if ( get_option('show_on_front') == 'page' )
-		{
-			$this->front_page_id = intval(get_option('page_on_front'));
-			$this->blog_page_id = intval(get_option('page_for_posts'));
-		}
-		
-		# default posts per page
-		$this->posts_per_page = get_option('posts_per_page');
 	} # sitemap_xml()
 	
 	
@@ -45,10 +35,26 @@ class sitemap_xml
 			return $this->close();
 		}
 		
+		# static front page
+		if ( get_option('show_on_front') == 'page' )
+		{
+			$this->front_page_id = intval(get_option('page_on_front'));
+			$this->blog_page_id = intval(get_option('page_for_posts'));
+		}
+		else
+		{
+			$this->front_page_id = false;
+			$this->blog_page_id = false;
+		}
+		
+		$this->posts_per_page = get_option('posts_per_page');
+		$this->stats = (object) null;
+		
 		$this->home();
 		$this->blog();
 		$this->pages();
-		#$this->posts();
+		$this->attachments();
+		$this->posts();
 		#$this->archives();
 		
 		return $this->close();
@@ -66,14 +72,13 @@ class sitemap_xml
 		global $wpdb;
 		
 		$loc = user_trailingslashit(get_option('home'));
-		$priority = .8;
 		
 		$stats = $wpdb->get_row("
 			SELECT	CAST(posts.post_modified AS DATE) as lastmod,
 					CASE COUNT(DISTINCT CAST(revisions.post_date AS DATE))
 					WHEN 0
 					THEN
-						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						0
 					ELSE
 						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
 						/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
@@ -82,6 +87,7 @@ class sitemap_xml
 			LEFT JOIN	$wpdb->posts as revisions
 			ON		revisions.post_parent = posts.ID
 			AND		revisions.post_type = 'revision'
+			AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
 			WHERE	posts.ID = $this->front_page_id
 			GROUP BY posts.ID
 			");
@@ -90,7 +96,7 @@ class sitemap_xml
 			$loc,
 			$stats->lastmod,
 			$stats->changefreq,
-			$priority
+			.8
 			);
 	} # home()
 	
@@ -108,13 +114,10 @@ class sitemap_xml
 			if ( $this->front_page_id ) return; # no blog page
 			
 			$loc = user_trailingslashit(get_option('home'));
-			$priority = .8;
 		}
 		else
 		{
-			$post = get_post($this->blog_page_id);
-			$loc = get_permalink($post->ID);
-			$priority = .8;
+			$loc = get_permalink($this->blog_page_id);
 		}
 		
 		$stats = $wpdb->get_row("
@@ -132,11 +135,14 @@ class sitemap_xml
 			AND		posts.post_status = 'publish'
 			");
 		
+		# this will be re-used in archives
+		$this->stats = $stats;
+		
 		$this->write(
 			$loc,
 			$stats->lastmod,
 			$stats->changefreq,
-			$priority
+			.8
 			);
 		
 		# run things through wp a bit
@@ -147,15 +153,13 @@ class sitemap_xml
 		
 		if ( $wp_query->max_num_pages > 1 )
 		{
-			$priority = .5;
-			
 			for ( $i = 2; $i <= $wp_query->max_num_pages; $i++ )
 			{
 				$this->write(
 					get_pagenum_link($i),
 					$stats->lastmod,
 					$stats->changefreq,
-					$priority
+					.4
 					);
 			}
 		}
@@ -193,7 +197,7 @@ class sitemap_xml
 					CASE COUNT(DISTINCT CAST(revisions.post_date AS DATE))
 					WHEN 0
 					THEN
-						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						0
 					ELSE
 						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
 						/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
@@ -201,7 +205,7 @@ class sitemap_xml
 					CASE
 					WHEN posts.post_parent = 0 OR COALESCE(COUNT(DISTINCT children.ID), 0) <> 0
 					THEN
-						.5
+						.4
 					ELSE
 						.8
 					END as priority
@@ -209,6 +213,7 @@ class sitemap_xml
 			LEFT JOIN $wpdb->posts as revisions
 			ON		revisions.post_parent = posts.ID
 			AND		revisions.post_type = 'revision'
+			AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
 			LEFT JOIN $wpdb->posts as children
 			ON		children.post_parent = posts.ID
 			AND		children.post_type = 'page'
@@ -247,6 +252,139 @@ class sitemap_xml
 				);
 		}
 	} # pages()
+	
+	
+	#
+	# attachments()
+	#
+	
+	function attachments()
+	{
+		global $wpdb;
+		
+		$exclude_sql = "
+			SELECT	exclude.post_id
+			FROM	$wpdb->postmeta as exclude
+			LEFT JOIN $wpdb->postmeta as exception
+			ON		exception.post_id = exclude.post_id
+			AND		exception.meta_key = '_widgets_exception'
+			WHERE	exclude.meta_key = '_widgets_exclude'
+			AND		exception.post_id IS NULL
+			";
+		
+		$sql = "
+			SELECT	posts.ID,
+					posts.post_author,
+					posts.post_name,
+					posts.post_type,
+					posts.post_status,
+					posts.post_parent,
+					posts.post_date,
+					posts.post_modified,
+					CAST(posts.post_modified AS DATE) as lastmod,
+					0 as changefreq
+			FROM	$wpdb->posts as posts
+			JOIN	$wpdb->posts as parents
+			ON		parents.ID = posts.post_parent
+			AND		parents.post_type IN ( 'post', 'page' )
+			AND		parents.post_status = 'publish'
+			AND		parents.post_password = ''
+			AND		parents.ID NOT IN ( $exclude_sql )
+			WHERE	posts.post_type = 'attachment'
+			ORDER BY posts.post_parent, posts.ID
+			";
+		#dump($sql);
+		$posts = $wpdb->get_results($sql);
+		
+		update_post_cache($posts);
+		
+		foreach ( $posts as $post )
+		{
+			$this->write(
+				get_permalink($post->ID),
+				$post->lastmod,
+				$post->changefreq,
+				.3
+				);
+		}
+	} # attachments()
+	
+	
+	#
+	# posts()
+	#
+	
+	function posts()
+	{
+		global $wpdb;
+		
+		$exclude_sql = "
+			SELECT	exclude.post_id
+			FROM	$wpdb->postmeta as exclude
+			LEFT JOIN $wpdb->postmeta as exception
+			ON		exception.post_id = exclude.post_id
+			AND		exception.meta_key = '_widgets_exception'
+			WHERE	exclude.meta_key = '_widgets_exclude'
+			AND		exception.post_id IS NULL
+			";
+		
+		$sql = "
+			SELECT	posts.ID,
+					posts.post_author,
+					posts.post_name,
+					posts.post_type,
+					posts.post_status,
+					posts.post_parent,
+					posts.post_date,
+					posts.post_modified,
+					CAST(posts.post_modified AS DATE) as lastmod,
+					CASE COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+					WHEN 0
+					THEN
+						0
+					ELSE
+						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+					END as changefreq
+			FROM	$wpdb->posts as posts
+			LEFT JOIN $wpdb->posts as revisions
+			ON		revisions.post_parent = posts.ID
+			AND		revisions.post_type = 'revision'
+			AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
+			WHERE	posts.post_type = 'post'
+			AND		posts.post_status = 'publish'
+			AND		posts.post_password = ''
+			AND		posts.ID NOT IN ( $exclude_sql )"
+			. ( $this->front_page_id
+				? "
+			AND		posts.ID <> $this->front_page_id
+				"
+				: ''
+				)
+			. ( $this->blog_page_id
+				? "
+			AND		posts.ID <> $this->blog_page_id
+				"
+				: ''
+				) . "
+			GROUP BY posts.ID
+			ORDER BY posts.post_parent, posts.ID
+			";
+		#dump($sql);
+		$posts = $wpdb->get_results($sql);
+		
+		update_post_cache($posts);
+		
+		foreach ( $posts as $post )
+		{
+			$this->write(
+				get_permalink($post->ID),
+				$post->lastmod,
+				$post->changefreq,
+				.6
+				);
+		}
+	} # posts()
 	
 	
 	#
@@ -321,7 +459,11 @@ class sitemap_xml
 			{
 				if ( $var == 'changefreq' && is_numeric($changefreq) )
 				{
-					if ( $changefreq > 91 )
+					if ( !$changefreq )
+					{
+						$changefreq = 'never';
+					}
+					elseif ( $changefreq > 91 )
 					{
 						$changefreq = 'yearly';
 					}
