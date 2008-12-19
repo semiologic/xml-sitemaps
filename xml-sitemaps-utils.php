@@ -15,7 +15,7 @@ class sitemap_xml
 	
 	function sitemap_xml()
 	{
-		$this->file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
+		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid();
 		
 		register_shutdown_function(array(&$this, 'close'));
 	} # sitemap_xml()
@@ -403,7 +403,7 @@ class sitemap_xml
 	
 	function open()
 	{
-		if ( isset($this->fp) ) fclose($this->fp);
+		if ( isset($this->fp) ) $this->close($this->fp);
 		
 		if ( !( $this->fp = fopen($this->file, 'w+') ) ) return false;
 		
@@ -435,6 +435,10 @@ class sitemap_xml
 			fclose($this->fp);
 			
 			$this->fp = null;
+			
+			$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
+			xml_sitemaps::rm($file);
+			rename($this->file, $file);
 		}
 	} # close()
 	
