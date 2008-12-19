@@ -57,7 +57,7 @@ class sitemap_xml
 		$this->attachments();
 		$this->posts();
 		#$this->categories();
-		#$this->tags();
+		$this->tags();
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		
@@ -389,6 +389,98 @@ class sitemap_xml
 	
 	
 	#
+	# tags()
+	#
+	
+	function tags()
+	{
+		global $wpdb;
+		global $wp_query;
+		
+		$exclude_sql = "
+			SELECT	exclude.post_id
+			FROM	$wpdb->postmeta as exclude
+			LEFT JOIN $wpdb->postmeta as exception
+			ON		exception.post_id = exclude.post_id
+			AND		exception.meta_key = '_widgets_exception'
+			WHERE	exclude.meta_key = '_widgets_exclude'
+			AND		exception.post_id IS NULL
+			";
+		
+		$terms = get_terms('post_tag', array('hide_empty' => true));
+		
+		if ( !$terms ) return; # no tags
+
+		$query_vars = array('taxonomy' => 'post_tag', 'term' => $terms[0]->slug);
+		
+		$this->query($query_vars);
+
+		$posts_per_page = $wp_query->query_vars['posts_per_page'];
+		
+		foreach ( $terms as $term )
+		{
+			$sql = "
+				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
+						CASE 
+						WHEN ( COUNT(DISTINCT CAST(revisions.post_date AS DATE)) = 0 )
+						THEN
+							0
+						ELSE
+							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
+							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+						END as changefreq,
+						COUNT(DISTINCT posts.ID) as num_posts
+				FROM	$wpdb->posts as posts
+				INNER JOIN $wpdb->term_relationships as term_relationships
+				ON		term_relationships.object_id = posts.ID
+				INNER JOIN $wpdb->term_taxonomy as term_taxonomy
+				ON		term_taxonomy.term_taxonomy_id = term_relationships.term_taxonomy_id
+				AND		term_taxonomy.taxonomy = 'post_tag'
+				AND		term_taxonomy.term_id = $term->term_id
+				LEFT JOIN $wpdb->posts as revisions
+				ON		revisions.post_parent = posts.ID
+				AND		revisions.post_type = 'revision'
+				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
+				AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
+				WHERE	posts.post_type = 'post'
+				AND		posts.post_status = 'publish'
+				AND		posts.post_password = ''
+				AND		posts.ID NOT IN ( $exclude_sql )
+				";
+
+			#dump($sql);
+
+			$stats = $wpdb->get_row($sql);
+			
+			$loc = get_tag_link($term->term_id);
+			
+			$this->write(
+				$loc,
+				$stats->lastmod,
+				$stats->changefreq,
+				.2
+				);
+			
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page )
+			{
+				$this->set_location($loc);
+
+				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ )
+				{
+					$this->write(
+						get_pagenum_link($i),
+						$stats->lastmod,
+						$stats->changefreq,
+						.2
+						);
+				}
+			}
+		}
+		
+	} # tags()
+	
+	
+	#
 	# archives()
 	#
 	
@@ -452,64 +544,63 @@ class sitemap_xml
 
 			$dates = $wpdb->get_results($sql);
 
-			if ( $dates )
+			if ( !$dates ) return; # empty blog
+
+			# fetch num posts per day
+			$date = $dates[0];
+			$day = split('-', $date->post_date);
+			
+			$query_vars = array();
+			
+			switch ( $archive_type )
 			{
-				# fetch num posts per day
-				$date = $dates[0];
+			case 'daily':
+				$query_vars['day'] = $day[2];
+			case 'monthly':
+				$query_vars['monthnum'] = $day[1];
+			case 'yearly':
+				$query_vars['year'] = $day[0];
+			}
+			
+			$this->query($query_vars);
+			
+			$posts_per_page = $wp_query->query_vars['posts_per_page'];
+			
+			foreach ( $dates as $date )
+			{
 				$day = split('-', $date->post_date);
-				
-				$query_vars = array();
-				
 				switch ( $archive_type )
 				{
-				case 'daily':
-					$query_vars['day'] = $day[2];
-				case 'monthly':
-					$query_vars['monthnum'] = $day[1];
 				case 'yearly':
-					$query_vars['year'] = $day[0];
+					$loc = get_year_link($day[0]);
+					break;
+				case 'monthly':
+					$loc = get_month_link($day[0], $day[1]);
+					break;
+				case 'daily':
+					$loc = get_day_link($day[0], $day[1], $day[2]);
+					break;
 				}
 				
-				$this->query($query_vars);
+				$this->write(
+					$loc,
+					$date->lastmod,
+					$date->changefreq,
+					.1
+					);
 				
-				$posts_per_page = $wp_query->query_vars['posts_per_page'];
-				
-				foreach ( $dates as $date )
+				if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page )
 				{
-					$day = split('-', $date->post_date);
-					switch ( $archive_type )
-					{
-					case 'yearly':
-						$loc = get_year_link($day[0]);
-						break;
-					case 'monthly':
-						$loc = get_month_link($day[0], $day[1]);
-						break;
-					case 'daily':
-						$loc = get_day_link($day[0], $day[1], $day[2]);
-						break;
-					}
-					
-					$this->write(
-						$loc,
-						$date->lastmod,
-						$date->changefreq,
-						.1
-						);
-					
-					if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page )
-					{
-						$this->set_location($loc);
+					$this->set_location($loc);
 
-						for ( $i = 2; $i <= ceil($date->num_posts / $posts_per_page); $i++ )
-						{
-							$this->write(
-								get_pagenum_link($i),
-								$date->lastmod,
-								$date->changefreq,
-								.1
-								);
-						}
+					for ( $i = 2; $i <= ceil($date->num_posts / $posts_per_page); $i++ )
+					{
+						$this->write(
+							get_pagenum_link($i),
+							$date->lastmod,
+							$date->changefreq,
+							.1
+							);
 					}
 				}
 			}
