@@ -47,7 +47,7 @@ class sitemap_xml
 		
 		$this->home();
 		$this->blog();
-		#$this->pages();
+		$this->pages();
 		#$this->posts();
 		#$this->archives();
 		
@@ -103,8 +103,6 @@ class sitemap_xml
 	{
 		global $wpdb;
 		
-		#$wp_query = new WP_Query;
-		
 		if ( !$this->blog_page_id )
 		{
 			if ( $this->front_page_id ) return; # no blog page
@@ -143,7 +141,7 @@ class sitemap_xml
 		
 		# run things through wp a bit
 		
-		$this->do_query($this->blog_page_id ? array('page_id' => $this->blog_page_id) : null, $loc);
+		$this->query($this->blog_page_id ? array('page_id' => $this->blog_page_id) : null, $loc);
 		
 		global $wp_query;
 		
@@ -165,6 +163,93 @@ class sitemap_xml
 	
 	
 	#
+	# pages()
+	#
+	
+	function pages()
+	{
+		global $wpdb;
+		
+		$exclude_sql = "
+			SELECT	exclude.post_id
+			FROM	$wpdb->postmeta as exclude
+			LEFT JOIN $wpdb->postmeta as exception
+			ON		exception.post_id = exclude.post_id
+			AND		exception.meta_key = '_widgets_exception'
+			WHERE	exclude.meta_key = '_widgets_exclude'
+			AND		exception.post_id IS NULL
+			";
+		
+		$sql = "
+			SELECT	posts.ID,
+					posts.post_author,
+					posts.post_name,
+					posts.post_type,
+					posts.post_status,
+					posts.post_parent,
+					posts.post_date,
+					posts.post_modified,
+					CAST(posts.post_modified AS DATE) as lastmod,
+					CASE COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+					WHEN 0
+					THEN
+						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+					ELSE
+						DATEDIFF(CAST(NOW() AS DATE), CAST(posts.post_date AS DATE))
+						/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+					END as changefreq,
+					CASE
+					WHEN posts.post_parent = 0 OR COALESCE(COUNT(DISTINCT children.ID), 0) <> 0
+					THEN
+						.5
+					ELSE
+						.8
+					END as priority
+			FROM	$wpdb->posts as posts
+			LEFT JOIN $wpdb->posts as revisions
+			ON		revisions.post_parent = posts.ID
+			AND		revisions.post_type = 'revision'
+			LEFT JOIN $wpdb->posts as children
+			ON		children.post_parent = posts.ID
+			AND		children.post_type = 'page'
+			AND		children.post_status = 'publish'
+			WHERE	posts.post_type = 'page'
+			AND		posts.post_status = 'publish'
+			AND		posts.post_password = ''
+			AND		posts.ID NOT IN ( $exclude_sql )"
+			. ( $this->front_page_id
+				? "
+			AND		posts.ID <> $this->front_page_id
+				"
+				: ''
+				)
+			. ( $this->blog_page_id
+				? "
+			AND		posts.ID <> $this->blog_page_id
+				"
+				: ''
+				) . "
+			GROUP BY posts.ID
+			ORDER BY posts.post_parent, posts.ID
+			";
+		#dump($sql);
+		$posts = $wpdb->get_results($sql);
+		
+		update_post_cache($posts);
+		
+		foreach ( $posts as $post )
+		{
+			$this->write(
+				get_permalink($post->ID),
+				$post->lastmod,
+				$post->changefreq,
+				$post->priority
+				);
+		}
+	} # pages()
+	
+	
+	#
 	# open()
 	#
 	
@@ -178,8 +263,7 @@ class sitemap_xml
 		$locked = false;
 		$now = microtime();
 		
-		do
-		{
+		do {
 			$locked = flock($this->fp, LOCK_EX);
 			if ( !$locked ) usleep(round(rand(0, 100)*1000));
 		} while ( !$locked && ( ( microtime() - $now ) < 1000 ) );
@@ -193,7 +277,7 @@ class sitemap_xml
 		
 		$o = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
 			. ( xml_sitemaps_debug
-				? '<!-- Generator: XML Sitemaps in Debug Mode -->'
+				? '<!-- Debug: XML Sitemaps -->'
 				: '<!-- Generator: XML Sitemaps -->'
 				) . "\n"
 			. '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
@@ -266,10 +350,10 @@ class sitemap_xml
 	
 	
 	#
-	# do_query()
+	# query()
 	#
 	
-	function do_query($query_vars = array(), $loc)
+	function query($query_vars = array(), $loc = null)
 	{
 		global $wp_the_query;
 		global $wp_query;
@@ -299,13 +383,13 @@ class sitemap_xml
 			parse_str($query_string, $query_vars);
 		}
 		
-		# only keep fields involved in permalinks
-		add_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
-		
 		$wp_query->query($query_vars);
 		
-		$_SERVER['REQUEST_URI'] = parse_url($loc);
-		$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI']['path'];
-	} # do_query()
+		if ( isset($loc) )
+		{
+			$_SERVER['REQUEST_URI'] = parse_url($loc);
+			$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI']['path'];
+		}
+	} # query()
 } # sitemap_xml
 ?>

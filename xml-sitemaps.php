@@ -40,6 +40,7 @@ class xml_sitemaps
 			{
 				add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 			}
+			
 			add_action('template_redirect', array('xml_sitemaps', 'template_redirect'));
 		}
 		else
@@ -63,9 +64,16 @@ class xml_sitemaps
 	{
 		include_once dirname(__FILE__) . '/xml-sitemaps-utils.php';
 		
+		# only keep fields involved in permalinks
+		wp_cache_flush();
+		add_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
+		
 		# sitemap.xml
 		$sitemap = new sitemap_xml;
 		$sitemap->generate();
+		
+		# restore fields
+		remove_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
 	} # generate()
 	
 	
