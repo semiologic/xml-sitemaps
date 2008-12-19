@@ -315,6 +315,16 @@ EOF;
 		
 		return "$wpdb->posts.ID, $wpdb->posts.post_author, $wpdb->posts.post_name, $wpdb->posts.post_type, $wpdb->posts.post_status, $wpdb->posts.post_parent, $wpdb->posts.post_date, $wpdb->posts.post_modified";
 	} # kill_query_fields()
+	
+	
+	#
+	# kill_query()
+	#
+	
+	function kill_query($in)
+	{
+		return ' AND ( 1 = 0 ) ';
+	}
 } # xml_sitemaps
 
 xml_sitemaps::init();
