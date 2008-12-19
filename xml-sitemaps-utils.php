@@ -56,7 +56,7 @@ class sitemap_xml
 		$this->pages();
 		$this->attachments();
 		$this->posts();
-		#$this->categories();
+		$this->categories();
 		$this->tags();
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
@@ -386,6 +386,98 @@ class sitemap_xml
 				);
 		}
 	} # posts()
+	
+	
+	#
+	# categories()
+	#
+	
+	function categories()
+	{
+		global $wpdb;
+		global $wp_query;
+		
+		$exclude_sql = "
+			SELECT	exclude.post_id
+			FROM	$wpdb->postmeta as exclude
+			LEFT JOIN $wpdb->postmeta as exception
+			ON		exception.post_id = exclude.post_id
+			AND		exception.meta_key = '_widgets_exception'
+			WHERE	exclude.meta_key = '_widgets_exclude'
+			AND		exception.post_id IS NULL
+			";
+		
+		$terms = get_terms('category', array('hide_empty' => true, 'exclude' => defined('main_cat_id') ? main_cat_id : ''));
+		
+		if ( !$terms ) return; # no cats
+
+		foreach ( $terms as $term )
+		{
+			$sql = "
+				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
+						CASE 
+						WHEN ( COUNT(DISTINCT CAST(revisions.post_date AS DATE)) = 0 )
+						THEN
+							0
+						ELSE
+							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
+							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+						END as changefreq,
+						COUNT(DISTINCT posts.ID) as num_posts
+				FROM	$wpdb->posts as posts
+				INNER JOIN $wpdb->term_relationships as term_relationships
+				ON		term_relationships.object_id = posts.ID
+				INNER JOIN $wpdb->term_taxonomy as term_taxonomy
+				ON		term_taxonomy.term_taxonomy_id = term_relationships.term_taxonomy_id
+				AND		term_taxonomy.taxonomy = 'category'
+				AND		term_taxonomy.term_id = $term->term_id
+				LEFT JOIN $wpdb->posts as revisions
+				ON		revisions.post_parent = posts.ID
+				AND		revisions.post_type = 'revision'
+				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
+				AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
+				WHERE	posts.post_type = 'post'
+				AND		posts.post_status = 'publish'
+				AND		posts.post_password = ''
+				AND		posts.ID NOT IN ( $exclude_sql )
+				";
+
+			#dump($sql);
+
+			$stats = $wpdb->get_row($sql);
+			
+			$loc = get_category_link($term->term_id);
+			
+			$this->write(
+				$loc,
+				$stats->lastmod,
+				$stats->changefreq,
+				.2
+				);
+			
+			$query_vars = array('taxonomy' => 'category', 'term' => $term->slug);
+			
+			$this->query($query_vars);
+			
+			$posts_per_page = $wp_query->query_vars['posts_per_page'];
+			
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page )
+			{
+				$this->set_location($loc);
+
+				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ )
+				{
+					$this->write(
+						get_pagenum_link($i),
+						$stats->lastmod,
+						$stats->changefreq,
+						.2
+						);
+				}
+			}
+		}
+		
+	} # categories()
 	
 	
 	#
