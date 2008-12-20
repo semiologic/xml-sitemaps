@@ -761,9 +761,12 @@ class sitemap_xml
 			else
 			{
 				rename($this->file, $file);
+				chmod($file, 0666);
+				
 				if ( function_exists('gzencode') )
 				{
 					rename($this->file . '.gz', $file . '.gz');
+					chmod($file . '.gz', 0666);
 				}
 			}
 		}
