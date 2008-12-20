@@ -266,7 +266,12 @@ EOF;
 			include_once ABSPATH . 'wp-admin/misc.php';
 		}
 		
-		return save_mod_rewrite_rules();
+		if ( !get_option('permalink_structure') )
+		{
+			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+		}
+		
+		return save_mod_rewrite_rules() && get_option('permalink_structure');
 	} # save_rewrite_rules()
 	
 	
