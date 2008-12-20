@@ -92,7 +92,10 @@ class xml_sitemaps
 	
 	function ping()
 	{
-		if ( $_SERVER['HTTP_HOST'] == 'localhost' || !intval(get_option('blog_public')) ) return;
+		if ( $_SERVER['HTTP_HOST'] == 'localhost'
+			|| !intval(get_option('blog_public'))
+			|| !intval(get_option('xml_sitemaps_ping'))
+			) return;
 		
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
@@ -120,6 +123,8 @@ class xml_sitemaps
 		{
 			wp_remote_fopen($file);
 		}
+		
+		update_option('xml_sitemaps_ping', 0);
 	} # ping()
 	
 	
@@ -138,6 +143,8 @@ class xml_sitemaps
 		if ( $post->post_status != 'publish' || $post->post_password != '' ) return;
 		
 		xml_sitemaps::flush();
+		
+		update_option('xml_sitemaps_ping', 1);
 	} # save_post()
 	
 	
@@ -155,8 +162,6 @@ class xml_sitemaps
 		{
 			if ( !xml_sitemaps::rm($file) ) return false;
 		}
-		
-		update_option('xml_sitemaps_ping', 1);
 		
 		return true;
 	} # flush()
