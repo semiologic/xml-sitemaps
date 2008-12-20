@@ -172,13 +172,16 @@ EOF;
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			}
-			elseif ( get_option('rewrite_rules') )
+			elseif ( !get_option('permalink_structure') )
 			{
-				echo '<div class="error">'
-					. '<p>'
-					. 'XML Sitemaps requires that you enable a fancy urls structure, under Settings / Permalinks.'
-					. '</p>' . "\n"
-					. '</div>' . "\n\n";
+				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-permalink.php') === false )
+				{
+					echo '<div class="error">'
+						. '<p>'
+						. 'XML Sitemaps requires that you enable a fancy urls structure, under Settings / Permalinks.'
+						. '</p>' . "\n"
+						. '</div>' . "\n\n";
+				}
 			}
 			else
 			{
