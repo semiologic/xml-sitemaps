@@ -20,7 +20,7 @@ This software is copyright Mesoconcepts and is distributed under the terms of th
 http://www.mesoconcepts.com/license/
 **/
 
-@define('xml_sitemaps_debug', true);
+@define('xml_sitemaps_debug', false);
 
 
 class xml_sitemaps
