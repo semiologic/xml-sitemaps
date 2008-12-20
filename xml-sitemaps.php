@@ -314,9 +314,9 @@ EOF;
 			}
 			elseif ( !intval(get_option('blog_public')) )
 			{
-				echo '<div class="notice">'
+				echo '<div class="error">'
 					. '<p>'
-					. 'XML Sitemaps is not active on your site becaues of your site\'s privacy settings (Settings / Privacy).'
+					. 'XML Sitemaps is not active on your site because of your site\'s privacy settings (Settings / Privacy).'
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			}
