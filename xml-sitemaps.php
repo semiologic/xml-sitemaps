@@ -58,6 +58,7 @@ class xml_sitemaps
 		}
 		
 		add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
+		add_action('update_option_blog_public', array('xml_sitemaps', 'reactivate'));
 	} # init()
 	
 	
@@ -67,6 +68,8 @@ class xml_sitemaps
 	
 	function do_robots()
 	{
+		if ( !intval(get_option('blog_public')) ) return;
+		
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
 		if ( file_exists($file . '.gz') )
@@ -271,12 +274,14 @@ EOF;
 			include_once ABSPATH . 'wp-admin/misc.php';
 		}
 		
-		if ( !get_option('permalink_structure') )
+		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )
 		{
 			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 		}
 		
-		return save_mod_rewrite_rules() && get_option('permalink_structure');
+		return save_mod_rewrite_rules()
+			&& get_option('permalink_structure')
+			&& intval(get_option('blog_public'));
 	} # save_rewrite_rules()
 	
 	
@@ -306,6 +311,14 @@ EOF;
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
+			}
+			elseif ( !intval(get_option('blog_public')) )
+			{
+				echo '<div class="notice">'
+					. '<p>'
+					. 'XML Sitemaps is not active on your site becaues of your site\'s privacy settings (Settings / Privacy).'
+					. '</p>' . "\n"
+					. '</div>' . "\n\n";
 			}
 			elseif ( !xml_sitemaps::flush() )
 			{
@@ -345,7 +358,7 @@ EOF;
 			
 			# create folder
 			$active &= xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps');
-
+			
 			# insert rewrite rules
 			if ( !xml_sitemaps_debug )
 			{
