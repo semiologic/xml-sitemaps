@@ -48,11 +48,7 @@ class xml_sitemaps
 			add_action('admin_notices', array('xml_sitemaps', 'inactive_notice'));
 		}
 		
-		#
-		# todo:
-		# - fail when permalinks are off
-		# - turn on/off when permalinks are turned off
-		#
+		add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
 	} # init()
 	
 	
@@ -149,6 +145,8 @@ EOF;
 			$wp_rewrite =& new WP_Rewrite;
 		}
 		
+		if ( !get_option('permalink_structure') ) return false;
+		
 		if ( !function_exists('save_mod_rewrite_rules') )
 		{
 			include_once ABSPATH . 'wp-admin/misc.php';
@@ -171,6 +169,14 @@ EOF;
 				echo '<div class="error">'
 					. '<p>'
 					. 'XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.'
+					. '</p>' . "\n"
+					. '</div>' . "\n\n";
+			}
+			elseif ( get_option('rewrite_rules') )
+			{
+				echo '<div class="error">'
+					. '<p>'
+					. 'XML Sitemaps requires that you enable a fancy urls structure, under Settings / Permalinks.'
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			}
@@ -228,6 +234,7 @@ EOF;
 			{
 				add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 			}
+			
 			$active &= xml_sitemaps::save_rewrite_rules();
 		}
 		
@@ -241,6 +248,18 @@ EOF;
 		
 		return $active;
 	} # activate()
+	
+	
+	#
+	# reactivate()
+	#
+	
+	function reactivate($in = null)
+	{
+		xml_sitemaps::activate();
+		
+		return $in;
+	} # reactivate()
 	
 	
 	#
