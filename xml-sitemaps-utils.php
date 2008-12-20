@@ -30,7 +30,7 @@ class sitemap_xml
 		if ( !$this->open() ) return;
 		
 		# private site
-		if ( !get_option('blog_public') )
+		if ( !intval(get_option('blog_public')) )
 		{
 			return $this->close();
 		}

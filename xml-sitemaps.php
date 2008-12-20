@@ -20,7 +20,7 @@ This software is copyright Mesoconcepts and is distributed under the terms of th
 http://www.mesoconcepts.com/license/
 **/
 
-@define('xml_sitemaps_debug', false);
+@define('xml_sitemaps_debug', true);
 
 
 class xml_sitemaps
@@ -34,7 +34,7 @@ class xml_sitemaps
 		register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
 		register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
 		
-		if ( get_option('xml_sitemaps') )
+		if ( intval(get_option('xml_sitemaps')) )
 		{
 			if ( !xml_sitemaps_debug )
 			{
@@ -49,6 +49,8 @@ class xml_sitemaps
 			{
 				wp_schedule_event(time(), 'hourly', 'xml_sitemaps_ping');
 			}
+			
+			add_action('do_robots', array('xml_sitemaps', 'do_robots'));
 		}
 		else
 		{
@@ -60,14 +62,14 @@ class xml_sitemaps
 	
 	
 	#
-	# ping()
+	# do_robots()
 	#
 	
-	function ping()
+	function do_robots()
 	{
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
-		if ( file_exists($file . 'gz') )
+		if ( file_exists($file . '.gz') )
 		{
 			$file = trailingslashit(get_option('home')) . 'sitemap.xml.gz';
 		}
@@ -80,14 +82,43 @@ class xml_sitemaps
 			return;
 		}
 		
+		echo "\n\n" . 'Sitemap: ' . $file;
+	}
+	
+	
+	#
+	# ping()
+	#
+	
+	function ping()
+	{
+		if ( $_SERVER['HTTP_HOST'] == 'localhost' || !intval(get_option('blog_public')) ) return;
+		
+		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
+		
+		if ( file_exists($file . '.gz') )
+		{
+			$file = trailingslashit(get_option('home')) . 'sitemap.xml.gz';
+		}
+		elseif ( file_exists($file) )
+		{
+			$file = trailingslashit(get_option('home')) . 'sitemap.xml';
+		}
+		else
+		{
+			return;
+		}
+		
+		$file = urlencode($file);
+		
 		foreach ( array(
-		#	"http://www.google.com/webmasters/sitemaps/ping?sitemap=" . urlencode($pingUrl);
-		#	"http://submissions.ask.com/ping?sitemap=" . urlencode($pingUrl);
-		#	"http://search.yahooapis.com/SiteExplorerService/V1/updateNotification?appid=" . $this->GetOption("sm_b_yahookey") . "&url=" . urlencode($pingUrl);
-		#	"http://webmaster.live.com/ping.aspx?siteMap=" . urlencode($pingUrl);
+			'http://www.google.com/webmasters/sitemaps/ping?sitemap=',
+			'http://webmaster.live.com/ping.aspx?siteMap=',
+			'http://submissions.ask.com/ping?sitemap=',
+			'http://search.yahooapis.com/SiteExplorerService/V1/updateNotification?appid=d8WFhrTV34HVHSrwjAUse9N43fR.S9DjtO5EvL3.xii4kc9tXFZc8yWf43k2XkHWMPs-&url='
 			) as $service )
 		{
-			#wp_remote_fopen();
+			wp_remote_fopen($file);
 		}
 	} # ping()
 	
@@ -178,7 +209,14 @@ class xml_sitemaps
 			while ( @ob_end_clean() );
 
 			status_header(200);
-			header('Content-Type:text/xml; charset=utf-8');
+			if ( strpos($sitemap, '.gz') !== false )
+			{
+				header('Content-Type: application/x-gzip');
+			}
+			else
+			{
+				header('Content-Type:text/xml; charset=utf-8');
+			}
 			readfile(WP_CONTENT_DIR . '/sitemaps/' . $sitemap);
 			die;
 		}
