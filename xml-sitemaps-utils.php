@@ -739,9 +739,33 @@ class sitemap_xml
 			
 			$this->fp = null;
 			
+			# compress
+			if ( function_exists('gzencode') )
+			{
+				$gzdata = gzencode(file_get_contents($this->file), 9);
+				$fp = fopen($this->file . '.gz', 'w+');
+				fwrite($fp, $gzdata);
+				fclose($fp);
+			}
+			
+			# move
 			$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
-			xml_sitemaps::rm($file);
-			rename($this->file, $file);
+			
+			if ( !xml_sitemaps::rm($file)
+				|| !xml_sitemaps::rm($file . '.gz')
+				)
+			{
+				unlink($this->file);
+				unlink($this->file . '.gz');
+			}
+			else
+			{
+				rename($this->file, $file);
+				if ( function_exists('gzencode') )
+				{
+					rename($this->file . '.gz', $file . '.gz');
+				}
+			}
 		}
 	} # close()
 	

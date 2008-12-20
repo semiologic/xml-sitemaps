@@ -20,7 +20,7 @@ This software is copyright Mesoconcepts and is distributed under the terms of th
 http://www.mesoconcepts.com/license/
 **/
 
-@define('xml_sitemaps_debug', true);
+@define('xml_sitemaps_debug', false);
 
 
 class xml_sitemaps
@@ -42,6 +42,13 @@ class xml_sitemaps
 			}
 			
 			add_action('template_redirect', array('xml_sitemaps', 'template_redirect'));
+			add_action('save_post', array('xml_sitemaps', 'save_post'));
+			add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
+			
+			if ( !wp_next_scheduled('xml_sitemaps_ping') )
+			{
+				wp_schedule_event(time(), 'hourly', 'xml_sitemaps_ping');
+			}
 		}
 		else
 		{
@@ -50,6 +57,78 @@ class xml_sitemaps
 		
 		add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
 	} # init()
+	
+	
+	#
+	# ping()
+	#
+	
+	function ping()
+	{
+		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
+		
+		if ( file_exists($file . 'gz') )
+		{
+			$file = trailingslashit(get_option('home')) . 'sitemap.xml.gz';
+		}
+		elseif ( file_exists($file) )
+		{
+			$file = trailingslashit(get_option('home')) . 'sitemap.xml';
+		}
+		else
+		{
+			return;
+		}
+		
+		foreach ( array(
+		#	"http://www.google.com/webmasters/sitemaps/ping?sitemap=" . urlencode($pingUrl);
+		#	"http://submissions.ask.com/ping?sitemap=" . urlencode($pingUrl);
+		#	"http://search.yahooapis.com/SiteExplorerService/V1/updateNotification?appid=" . $this->GetOption("sm_b_yahookey") . "&url=" . urlencode($pingUrl);
+		#	"http://webmaster.live.com/ping.aspx?siteMap=" . urlencode($pingUrl);
+			) as $service )
+		{
+			#wp_remote_fopen();
+		}
+	} # ping()
+	
+	
+	#
+	# save_post()
+	#
+	
+	function save_post($post_ID)
+	{
+		$post = get_post($post_ID);
+		
+		# ignore revisions
+		if ( $post->post_type == 'revision' ) return;
+		
+		# ignore non-published data and password protected data
+		if ( $post->post_status != 'publish' || $post->post_password != '' ) return;
+		
+		xml_sitemaps::flush();
+	} # save_post()
+	
+	
+	#
+	# flush()
+	#
+	
+	function flush()
+	{
+		foreach ( array(
+			ABSPATH . 'sitemap.xml',
+			ABSPATH . 'sitemap.xml.gz',
+			WP_CONTENT_DIR . '/sitemaps',
+				) as $file )
+		{
+			if ( !xml_sitemaps::rm($file) ) return false;
+		}
+		
+		update_option('xml_sitemaps_ping', 1);
+		
+		return true;
+	} # flush()
 	
 	
 	#
@@ -98,8 +177,7 @@ class xml_sitemaps
 			$GLOBALS['wp_filter'] = array();
 			while ( @ob_end_clean() );
 
-			ob_start();
-
+			status_header(200);
 			header('Content-Type:text/xml; charset=utf-8');
 			readfile(WP_CONTENT_DIR . '/sitemaps/' . $sitemap);
 			die;
@@ -183,7 +261,7 @@ EOF;
 						. '</div>' . "\n\n";
 				}
 			}
-			else
+			elseif ( !xml_sitemaps::flush() )
 			{
 				echo '<div class="error">'
 					. '<p>'
@@ -217,18 +295,8 @@ EOF;
 		else
 		{
 			# clean up
-			foreach ( array(
-				ABSPATH . 'sitemap.xml',
-				ABSPATH . 'sitemap.xml.gz',
-				WP_CONTENT_DIR . '/sitemaps',
-					) as $file )
-			{
-				if ( file_exists($file) )
-				{
-					$active &= xml_sitemaps::rm($file);
-				}
-			}
-
+			$active &= xml_sitemaps::flush();
+			
 			# create folder
 			$active &= xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps');
 
@@ -289,16 +357,7 @@ EOF;
 	
 	function mkdir($dir)
 	{
-		if ( ! @mkdir($dir) )
-		{
-			return false;
-		}
-		else
-		{
-			@chmod($dir, 0777);
-			
-			return true;
-		}
+		return mkdir($dir) && chmod($dir, 0777);
 	} # mkdir()
 	
 	
@@ -308,22 +367,26 @@ EOF;
 	
 	function rm($dir)
 	{
-		if ( is_file($dir) )
+		if ( !file_exists($dir) ) return true;
+		
+		if ( is_file($dir) ) return unlink($dir);
+		
+		if ( !( $handle = opendir($dir) ) ) return false;
+		
+		while ( ( $file = readdir($handle) ) !== false )
 		{
-			return @unlink($dir);
-		}
-		else
-		{
-			foreach ( glob("$dir/*") as $file )
-			{
-				if ( !xml_sitemaps::rm($file) )
-				{
-					return false;
-				}
-			}
+			if ( in_array($file, array('.', '..')) ) continue;
 			
-			return @rmdir($dir);
+			if ( !xml_sitemaps::rm($file) )
+			{
+				closedir($handle);
+				return false;
+			}
 		}
+		
+		closedir($handle);
+		
+		return rmdir($dir);
 	} # rm()
 	
 	
