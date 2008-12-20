@@ -238,7 +238,7 @@ class xml_sitemaps
 		$extra = <<<EOF
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteBase $home_path
+RewriteBase $home_path/
 RewriteRule ^(sitemap\.xml|sitemap\.xml\.gz)$ $site_path/wp-content/sitemaps/$1 [L]
 </IfModule>
 EOF;
@@ -260,8 +260,6 @@ EOF;
 		{
 			$wp_rewrite =& new WP_Rewrite;
 		}
-		
-		if ( !get_option('permalink_structure') ) return false;
 		
 		if ( !function_exists('save_mod_rewrite_rules') )
 		{
@@ -415,7 +413,7 @@ EOF;
 		{
 			if ( in_array($file, array('.', '..')) ) continue;
 			
-			if ( !xml_sitemaps::rm($file) )
+			if ( !xml_sitemaps::rm("$dir/$file") )
 			{
 				closedir($handle);
 				return false;
