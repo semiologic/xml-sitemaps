@@ -72,6 +72,14 @@ class xml_sitemaps
 		
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
+		if ( !file_exists($file) )
+		{
+			if ( !xml_sitemaps::generate() )
+			{
+				return;
+			}
+		}
+		
 		if ( file_exists($file . '.gz') )
 		{
 			$file = trailingslashit(get_option('home')) . 'sitemap.xml.gz';
@@ -178,16 +186,20 @@ class xml_sitemaps
 	{
 		include_once dirname(__FILE__) . '/xml-sitemaps-utils.php';
 		
-		# only keep fields involved in permalinks
+		# dump wp cache
 		wp_cache_flush();
+		
+		# only keep fields involved in permalinks
 		add_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
 		
 		# sitemap.xml
 		$sitemap = new sitemap_xml;
-		$sitemap->generate();
+		$return = $sitemap->generate();
 		
 		# restore fields
 		remove_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
+		
+		return $return;
 	} # generate()
 	
 	
@@ -202,14 +214,19 @@ class xml_sitemaps
 		
 		if ( in_array(
 				$_SERVER['REQUEST_URI'],
-				array($home_path . '/sitemap.xml', $home_path . '/sitemap.xml.gz'))
+				array($home_path . '/sitemap.xml', $home_path . '/sitemap.xml.gz')
+				)
 			)
 		{
+			$dir = WP_CONTENT_DIR . '/sitemaps/';
+			
+			if ( !is_dir($dir) && !xml_sitemaps::activate() ) return;
+			
 			$sitemap = basename($_SERVER['REQUEST_URI']);
-
-			if ( !file_exists($sitemap) )
+			
+			if ( !file_exists(WP_CONTENT_DIR . '/sitemaps/' . $sitemap) )
 			{
-				xml_sitemaps::generate();
+				if ( !xml_sitemaps::generate() ) return;
 			}
 			
 			# Reset WP
@@ -271,7 +288,7 @@ EOF;
 		
 		if ( !function_exists('save_mod_rewrite_rules') )
 		{
-			include_once ABSPATH . 'wp-admin/misc.php';
+			include_once ABSPATH . 'wp-includes/misc.php';
 		}
 		
 		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )

@@ -27,12 +27,13 @@ class sitemap_xml
 	
 	function generate()
 	{
-		if ( !$this->open() ) return;
+		if ( !$this->open() ) return false;
 		
 		# private site
 		if ( !intval(get_option('blog_public')) )
 		{
-			return $this->close();
+			$this->close();
+			return true;
 		}
 		
 		# static front page
@@ -61,7 +62,8 @@ class sitemap_xml
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		
-		return $this->close();
+		$this->close();
+		return true;
 	} # generate()
 	
 	
@@ -152,7 +154,7 @@ class sitemap_xml
 			);
 		
 		# run things through wp a bit
-		$this->query($this->blog_page_id ? array('page_id' => $this->blog_page_id) : null);
+		$this->query($this->blog_page_id ? array('page_id' => $this->blog_page_id) : array());
 		
 		if ( $wp_query->max_num_pages > 1 )
 		{
