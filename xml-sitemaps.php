@@ -433,7 +433,7 @@ EOF;
 	
 	function mkdir($dir)
 	{
-		return mkdir($dir) && chmod($dir, 0777);
+		return @mkdir($dir) && @chmod($dir, 0777);
 	} # mkdir()
 	
 	
@@ -445,9 +445,9 @@ EOF;
 	{
 		if ( !file_exists($dir) ) return true;
 		
-		if ( is_file($dir) ) return unlink($dir);
+		if ( is_file($dir) ) return @unlink($dir);
 		
-		if ( !( $handle = opendir($dir) ) ) return false;
+		if ( !( $handle = @opendir($dir) ) ) return false;
 		
 		while ( ( $file = readdir($handle) ) !== false )
 		{
@@ -462,7 +462,7 @@ EOF;
 		
 		closedir($handle);
 		
-		return rmdir($dir);
+		return @rmdir($dir);
 	} # rm()
 	
 	
