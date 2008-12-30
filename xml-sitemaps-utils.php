@@ -154,7 +154,12 @@ class sitemap_xml
 			);
 		
 		# run things through wp a bit
-		$this->query($this->blog_page_id ? array('page_id' => $this->blog_page_id) : array());
+		$query_vars = array();
+		if ( $this->blog_page_id )
+		{
+			$query_vars['page_id'] = $this->blog_page_id;
+		}
+		$this->query($query_vars);
 		
 		if ( $wp_query->max_num_pages > 1 )
 		{
@@ -834,9 +839,9 @@ class sitemap_xml
 		# create new wp_query
 		$wp_query = new WP_Query();
 		
-		$query_vars = apply_filters('request', $query_vars);
+		$query_vars = apply_filters('request', (array) $query_vars);
 		$query_string = '';
-		foreach ( (array) array_keys($query_vars) as $wpvar)
+		foreach ( array_keys((array) $query_vars) as $wpvar)
 		{
 			if ( '' != $query_vars[$wpvar] )
 			{
