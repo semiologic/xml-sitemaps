@@ -374,10 +374,13 @@ EOF;
 			$active &= xml_sitemaps::flush();
 			
 			# create folder
-			$active &= xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps');
+			if ( $active )
+			{
+				$active &= xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps');
+			}
 			
 			# insert rewrite rules
-			if ( !xml_sitemaps_debug )
+			if ( $active && !xml_sitemaps_debug )
 			{
 				add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 			}
