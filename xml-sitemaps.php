@@ -166,8 +166,8 @@ class xml_sitemaps
 	function flush()
 	{
 		foreach ( array(
-			ABSPATH . 'sitemap.xml',
-			ABSPATH . 'sitemap.xml.gz',
+		#	ABSPATH . 'sitemap.xml',
+		#	ABSPATH . 'sitemap.xml.gz',
 			WP_CONTENT_DIR . '/sitemaps',
 				) as $file )
 		{
