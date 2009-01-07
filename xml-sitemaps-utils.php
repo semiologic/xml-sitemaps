@@ -15,7 +15,7 @@ class sitemap_xml
 	
 	function sitemap_xml()
 	{
-		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid();
+		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid(rand());
 		
 		register_shutdown_function(array(&$this, 'close'));
 	} # sitemap_xml()
