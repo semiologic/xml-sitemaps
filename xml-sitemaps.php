@@ -3,8 +3,8 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/marketing/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Author: Denis de Bernardy
 Version: 1.0.3 alpha
+Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 */
 
