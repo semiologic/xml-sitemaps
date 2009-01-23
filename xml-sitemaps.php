@@ -12,9 +12,9 @@ Author URI: http://www.getsemiologic.com
 Terms of use
 ------------
 
-This software is copyright Mesoconcepts and is distributed under the terms of the Mesoconcepts license. In a nutshell, you may freely use it for any purpose, but may not redistribute it without written permission.
+This software is copyright Mesoconcepts (http://www.mesoconcepts.com), and is distributed under the terms of the GPL license, v.2.
 
-http://www.mesoconcepts.com/license/
+http://www.opensource.org/licenses/gpl-2.0.php
 **/
 
 @define('xml_sitemaps_debug', false);
