@@ -1,4 +1,4 @@
-=== Uploads Folder ===
+=== XML Sitemaps ===
 Contributors: Denis-de-Bernardy, Semiologic
 Donate link: http://buy.semiologic.com/drink
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
