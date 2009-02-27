@@ -53,6 +53,7 @@ class sitemap_xml
 		
 		$this->home();
 		$this->blog();
+		
 		add_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		$this->pages();
 		$this->attachments();
@@ -130,17 +131,18 @@ class sitemap_xml
 		
 		$stats = $wpdb->get_row("
 			SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
-					CASE COUNT(DISTINCT CAST(posts.post_date AS DATE))
+					CASE COUNT(posts.ID)
 					WHEN 0
 					THEN
 						0
 					ELSE
 						DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
-						/ COUNT(DISTINCT CAST(posts.post_date AS DATE))
+						/ COUNT(posts.ID)
 					END as changefreq
 			FROM	$wpdb->posts as posts
 			WHERE	posts.post_type = 'post'
 			AND		posts.post_status = 'publish'
+			AND		posts.password = ''
 			");
 		
 		# this will be re-used in archives
@@ -404,16 +406,6 @@ class sitemap_xml
 		global $wpdb;
 		global $wp_query;
 		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
 		$terms = get_terms('category', array('hide_empty' => true, 'exclude' => defined('main_cat_id') ? main_cat_id : ''));
 		
 		if ( !$terms ) return; # no cats
@@ -421,16 +413,16 @@ class sitemap_xml
 		foreach ( $terms as $term )
 		{
 			$sql = "
-				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
+				SELECT	MAX(CAST(posts.post_date AS DATE)) as lastmod,
 						CASE 
-						WHEN ( COUNT(DISTINCT CAST(revisions.post_date AS DATE)) = 0 )
+						WHEN ( COUNT(posts.ID) = 0 )
 						THEN
 							0
 						ELSE
 							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
-							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+							/ COUNT(posts.ID)
 						END as changefreq,
-						COUNT(DISTINCT posts.ID) as num_posts
+						COUNT(posts.ID) as num_posts
 				FROM	$wpdb->posts as posts
 				INNER JOIN $wpdb->term_relationships as term_relationships
 				ON		term_relationships.object_id = posts.ID
@@ -438,15 +430,9 @@ class sitemap_xml
 				ON		term_taxonomy.term_taxonomy_id = term_relationships.term_taxonomy_id
 				AND		term_taxonomy.taxonomy = 'category'
 				AND		term_taxonomy.term_id = $term->term_id
-				LEFT JOIN $wpdb->posts as revisions
-				ON		revisions.post_parent = posts.ID
-				AND		revisions.post_type = 'revision'
-				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
-				AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
 				WHERE	posts.post_type = 'post'
 				AND		posts.post_status = 'publish'
 				AND		posts.post_password = ''
-				AND		posts.ID NOT IN ( $exclude_sql )
 				";
 
 			#dump($sql);
@@ -496,16 +482,6 @@ class sitemap_xml
 		global $wpdb;
 		global $wp_query;
 		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
 		$terms = get_terms('post_tag', array('hide_empty' => true));
 		
 		if ( !$terms ) return; # no tags
@@ -521,14 +497,14 @@ class sitemap_xml
 			$sql = "
 				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
 						CASE 
-						WHEN ( COUNT(DISTINCT CAST(revisions.post_date AS DATE)) = 0 )
+						WHEN ( COUNT(posts.ID) = 0 )
 						THEN
 							0
 						ELSE
 							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
-							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+							/ COUNT(posts.ID)
 						END as changefreq,
-						COUNT(DISTINCT posts.ID) as num_posts
+						COUNT(posts.ID) as num_posts
 				FROM	$wpdb->posts as posts
 				INNER JOIN $wpdb->term_relationships as term_relationships
 				ON		term_relationships.object_id = posts.ID
@@ -536,15 +512,9 @@ class sitemap_xml
 				ON		term_taxonomy.term_taxonomy_id = term_relationships.term_taxonomy_id
 				AND		term_taxonomy.taxonomy = 'post_tag'
 				AND		term_taxonomy.term_id = $term->term_id
-				LEFT JOIN $wpdb->posts as revisions
-				ON		revisions.post_parent = posts.ID
-				AND		revisions.post_type = 'revision'
-				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
-				AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
 				WHERE	posts.post_type = 'post'
 				AND		posts.post_status = 'publish'
 				AND		posts.post_password = ''
-				AND		posts.ID NOT IN ( $exclude_sql )
 				";
 
 			#dump($sql);
@@ -588,59 +558,49 @@ class sitemap_xml
 		global $wpdb;
 		global $wp_query;
 		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
 		foreach ( array('yearly', 'monthly', 'daily') as $archive_type )
 		{
 			switch ( $archive_type )
 			{
 			case 'yearly':
 				$post_date = "CAST(DATE_FORMAT(posts.post_date, '%Y-00-00') AS DATE)";
+				$post_date_stop = "DATEDIFF(CAST(NOW() AS DATE), $post_date) > 450";
 				break;
 			case 'monthly':
 				$post_date = "CAST(DATE_FORMAT(posts.post_date, '%Y-%m-00') AS DATE)";
+				$post_date_stop = "DATEDIFF(CAST(NOW() AS DATE), $post_date) > 45";
 				break;
 			case 'daily':
 				$post_date = "CAST(posts.post_date AS DATE)";
+				$post_date_stop = "DATEDIFF(CAST(NOW() AS DATE), $post_date) > 10";
 				break;
 			}
 			
 			$sql = "
 				SELECT	$post_date as post_date,
 						MAX(CAST(posts.post_modified AS DATE)) as lastmod,
-						CASE 
-						WHEN ( COUNT(DISTINCT CAST(revisions.post_date AS DATE)) = 0 )
+						CASE
+						WHEN ( COUNT(posts.ID) = 0 )
+						THEN
+							0
+						WHEN $post_date_stop
 						THEN
 							0
 						ELSE
 							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
-							/ COUNT(DISTINCT CAST(revisions.post_date AS DATE))
+							/ COUNT(posts.ID)
 						END as changefreq,
-						COUNT(DISTINCT posts.ID) as num_posts
+						COUNT(posts.ID) as num_posts
 				FROM	$wpdb->posts as posts
-				LEFT JOIN $wpdb->posts as revisions
-				ON		revisions.post_parent = posts.ID
-				AND		revisions.post_type = 'revision'
-				AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
-				AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
 				WHERE	posts.post_type = 'post'
 				AND		posts.post_status = 'publish'
 				AND		posts.post_password = ''
-				AND		posts.ID NOT IN ( $exclude_sql )
 				GROUP BY $post_date
 				ORDER BY $post_date
 				";
 
 			#dump($sql);
-
+			
 			$dates = $wpdb->get_results($sql);
 
 			if ( !$dates ) return; # empty blog
