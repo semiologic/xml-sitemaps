@@ -181,6 +181,12 @@ class xml_sitemaps
 	
 	function generate()
 	{
+		if ( abs(intval(WP_MEMORY_LIMIT)) < 128
+			&& function_exists('memory_get_usage')
+			&& ( (int) @ini_get('memory_limit') < 128 )
+			)
+			@ini_set('memory_limit', '128M');
+
 		include_once dirname(__FILE__) . '/xml-sitemaps-utils.php';
 		
 		# dump wp cache
