@@ -343,7 +343,7 @@ EOF;
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			}
-			elseif ( !xml_sitemaps::flush() )
+			elseif ( !xml_sitemaps::flush() || !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps') )
 			{
 				echo '<div class="error">'
 					. '<p>'
@@ -442,7 +442,7 @@ EOF;
 	
 	function mkdir($dir)
 	{
-		return @mkdir($dir) && @chmod($dir, 0777);
+		return @mkdir($dir) && chmod($dir, 0777);
 	} # mkdir()
 	
 	
