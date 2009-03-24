@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/marketing/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.1 alpha
+Version: 1.1
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 */
@@ -152,29 +152,10 @@ class xml_sitemaps
 		# ignore non-published data and password protected data
 		if ( $post->post_status != 'publish' || $post->post_password != '' ) return;
 		
-		xml_sitemaps::flush();
+		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 		
 		update_option('xml_sitemaps_ping', 1);
 	} # save_post()
-	
-	
-	#
-	# flush()
-	#
-	
-	function flush()
-	{
-		foreach ( array(
-		#	ABSPATH . 'sitemap.xml',
-		#	ABSPATH . 'sitemap.xml.gz',
-			WP_CONTENT_DIR . '/sitemaps',
-				) as $file )
-		{
-			if ( !xml_sitemaps::rm($file) ) return false;
-		}
-		
-		return true;
-	} # flush()
 	
 	
 	#
@@ -343,7 +324,9 @@ EOF;
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			}
-			elseif ( !xml_sitemaps::flush() || !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps') )
+			elseif ( !xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps')
+				|| !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps')
+				|| !is_writable('.htaccess') )
 			{
 				echo '<div class="error">'
 					. '<p>'
@@ -377,7 +360,7 @@ EOF;
 		else
 		{
 			# clean up
-			$active &= xml_sitemaps::flush();
+			$active &= xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 			
 			# create folder
 			if ( $active )
