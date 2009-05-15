@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.1.1 RC
+Version: 1.2 RC
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 */
@@ -18,13 +18,16 @@ http://www.opensource.org/licenses/gpl-2.0.php
 **/
 
 
-@define('xml_sitemaps_debug', false);
+load_plugin_textdomain('xml-sitemaps', null, dirname(__FILE__) . '/lang');
+
 
 /**
  * xml_sitemaps
  *
  * @package XML Sitemaps
  **/
+
+@define('xml_sitemaps_debug', true);
 
 register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
 register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
@@ -279,7 +282,7 @@ EOF;
 				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-permalink.php') === false ) {
 					echo '<div class="error">'
 						. '<p>'
-						. 'XML Sitemaps requires that you enable a fancy urls structure, under Settings / Permalinks.'
+						. 'XML Sitemaps requires that you enable a fancy url structure. under Settings / Permalinks.'
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
