@@ -275,30 +275,29 @@ EOF;
 			if ( version_compare(mysql_get_server_info(), '4.1.1', '<') ) {
 				echo '<div class="error">'
 					. '<p>'
-					. 'XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.'
+					. __('XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !get_option('permalink_structure') ) {
 				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-permalink.php') === false ) {
 					echo '<div class="error">'
 						. '<p>'
-						. 'XML Sitemaps requires that you enable a fancy url structure. under Settings / Permalinks.'
+						. __('XML Sitemaps requires that you enable a fancy url structure. under Settings / Permalinks.', 'xml-sitemaps')
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
 			} elseif ( !intval(get_option('blog_public')) ) {
 				echo '<div class="error">'
 					. '<p>'
-					. 'XML Sitemaps is not active on your site because of your site\'s privacy settings (Settings / Privacy).'
+					. __('XML Sitemaps is not active on your site because of your site\'s privacy settings (Settings / Privacy).', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps')
 				|| !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps')
-				|| !is_writable('.htaccess') )
-			{
+				|| !is_writable('.htaccess') ){
 				echo '<div class="error">'
 					. '<p>'
-					. 'XML Sitemaps is not active on your site. Please make the following file and folder writable by the server:'
+					. __('XML Sitemaps is not active on your site. Please make the following file and folder writable by the server:', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '<ul style="margin-left: 1.5em; list-style: square;">' . "\n"
 					. '<li>' . '.htaccess (chmod 666)' . '</li>' . "\n"
