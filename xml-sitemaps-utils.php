@@ -1,6 +1,11 @@
 <?php
-class sitemap_xml
-{
+/**
+ * sitemap_xml
+ *
+ * @package XML Sitemaps
+ **/
+
+class sitemap_xml {
 	var $file;
 	var $fp;
 	
@@ -9,41 +14,40 @@ class sitemap_xml
 	var $posts_per_page;
 	
 	
-	#
-	# sitemap_xml()
-	#
+	/**
+	 * sitemap_xml()
+	 *
+	 * @return void
+	 **/
 	
-	function sitemap_xml()
-	{
+	function sitemap_xml() {
 		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid(rand());
 		
 		register_shutdown_function(array(&$this, 'close'));
 	} # sitemap_xml()
 	
 	
-	#
-	# generate()
-	#
+	/**
+	 * generate()
+	 *
+	 * @return bool $success
+	 **/
 	
-	function generate()
-	{
-		if ( !$this->open() ) return false;
+	function generate() {
+		if ( !$this->open() )
+			return false;
 		
 		# private site
-		if ( !intval(get_option('blog_public')) )
-		{
+		if ( !intval(get_option('blog_public')) ) {
 			$this->close();
 			return true;
 		}
 		
 		# static front page
-		if ( get_option('show_on_front') == 'page' )
-		{
+		if ( get_option('show_on_front') == 'page' ) {
 			$this->front_page_id = intval(get_option('page_on_front'));
 			$this->blog_page_id = intval(get_option('page_for_posts'));
-		}
-		else
-		{
+		} else {
 			$this->front_page_id = false;
 			$this->blog_page_id = false;
 		}
@@ -56,7 +60,6 @@ class sitemap_xml
 		
 		add_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		$this->pages();
-		$this->attachments();
 		$this->posts();
 		$this->categories();
 		$this->tags();
@@ -68,12 +71,13 @@ class sitemap_xml
 	} # generate()
 	
 	
-	#
-	# home()
-	#
+	/**
+	 * home()
+	 *
+	 * @return void
+	 **/
 	
-	function home()
-	{
+	function home() {
 		if ( !$this->front_page_id ) return;
 		
 		global $wpdb;
@@ -109,23 +113,22 @@ class sitemap_xml
 	} # home()
 	
 	
-	#
-	# blog()
-	#
+	/**
+	 * blog()
+	 *
+	 * @return void
+	 **/
 	
-	function blog()
-	{
+	function blog() {
 		global $wpdb;
 		global $wp_query;
 		
-		if ( !$this->blog_page_id )
-		{
-			if ( $this->front_page_id ) return; # no blog page
+		if ( !$this->blog_page_id ) {
+			if ( $this->front_page_id ) # no blog page
+				return;
 			
 			$loc = user_trailingslashit(get_option('home'));
-		}
-		else
-		{
+		} else {
 			$loc = get_permalink($this->blog_page_id);
 		}
 		
@@ -158,17 +161,13 @@ class sitemap_xml
 		# run things through wp a bit
 		$query_vars = array();
 		if ( $this->blog_page_id )
-		{
 			$query_vars['page_id'] = $this->blog_page_id;
-		}
 		$this->query($query_vars);
 		
-		if ( $wp_query->max_num_pages > 1 )
-		{
+		if ( $wp_query->max_num_pages > 1 ) {
 			$this->set_location($loc);
 			
-			for ( $i = 2; $i <= $wp_query->max_num_pages; $i++ )
-			{
+			for ( $i = 2; $i <= $wp_query->max_num_pages; $i++ ) {
 				$this->write(
 					get_pagenum_link($i),
 					$stats->lastmod,
@@ -180,12 +179,13 @@ class sitemap_xml
 	} # blog()
 	
 	
-	#
-	# pages()
-	#
+	/**
+	 * pages()
+	 *
+	 * @return void
+	 **/
 	
-	function pages()
-	{
+	function pages() {
 		global $wpdb;
 		
 		$exclude_sql = "
@@ -259,8 +259,7 @@ class sitemap_xml
 		
 		update_post_cache($posts);
 		
-		foreach ( $posts as $post )
-		{
+		foreach ( $posts as $post ) {
 			$this->write(
 				get_permalink($post->ID),
 				$post->lastmod,
@@ -271,70 +270,13 @@ class sitemap_xml
 	} # pages()
 	
 	
-	#
-	# attachments()
-	#
+	/**
+	 * posts()
+	 *
+	 * @return void
+	 **/
 	
-	function attachments()
-	{
-		global $wpdb;
-		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
-		$sql = "
-			SELECT	posts.ID,
-					posts.post_author,
-					posts.post_name,
-					posts.post_type,
-					posts.post_status,
-					posts.post_parent,
-					posts.post_date,
-					posts.post_modified,
-					CAST(posts.post_modified AS DATE) as lastmod,
-					0 as changefreq
-			FROM	$wpdb->posts as posts
-			JOIN	$wpdb->posts as parents
-			ON		parents.ID = posts.post_parent
-			AND		parents.post_type IN ( 'post', 'page' )
-			AND		parents.post_status = 'publish'
-			AND		parents.post_password = ''
-			AND		parents.ID NOT IN ( $exclude_sql )
-			WHERE	posts.post_type = 'attachment'
-			ORDER BY posts.post_parent, posts.ID
-			";
-		
-		#dump($sql);
-		
-		$posts = $wpdb->get_results($sql);
-		
-		update_post_cache($posts);
-		
-		foreach ( $posts as $post )
-		{
-			$this->write(
-				get_permalink($post->ID),
-				$post->lastmod,
-				$post->changefreq,
-				.3
-				);
-		}
-	} # attachments()
-	
-	
-	#
-	# posts()
-	#
-	
-	function posts()
-	{
+	function posts() {
 		global $wpdb;
 		
 		$exclude_sql = "
@@ -385,8 +327,7 @@ class sitemap_xml
 		
 		update_post_cache($posts);
 		
-		foreach ( $posts as $post )
-		{
+		foreach ( $posts as $post ) {
 			$this->write(
 				get_permalink($post->ID),
 				$post->lastmod,
@@ -397,12 +338,13 @@ class sitemap_xml
 	} # posts()
 	
 	
-	#
-	# categories()
-	#
+	/**
+	 * categories()
+	 *
+	 * @return void
+	 **/
 	
-	function categories()
-	{
+	function categories() {
 		global $wpdb;
 		global $wp_query;
 		
@@ -410,8 +352,7 @@ class sitemap_xml
 		
 		if ( !$terms ) return; # no cats
 
-		foreach ( $terms as $term )
-		{
+		foreach ( $terms as $term ) {
 			$sql = "
 				SELECT	MAX(CAST(posts.post_date AS DATE)) as lastmod,
 						CASE 
@@ -454,12 +395,10 @@ class sitemap_xml
 			
 			$posts_per_page = $wp_query->query_vars['posts_per_page'];
 			
-			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page )
-			{
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
 				$this->set_location($loc);
 
-				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ )
-				{
+				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
 					$this->write(
 						get_pagenum_link($i),
 						$stats->lastmod,
@@ -469,22 +408,23 @@ class sitemap_xml
 				}
 			}
 		}
-		
 	} # categories()
 	
 	
-	#
-	# tags()
-	#
+	/**
+	 * tags()
+	 *
+	 * @return void
+	 **/
 	
-	function tags()
-	{
+	function tags() {
 		global $wpdb;
 		global $wp_query;
 		
 		$terms = get_terms('post_tag', array('hide_empty' => true));
 		
-		if ( !$terms ) return; # no tags
+		if ( !$terms ) # no tags
+			return;
 
 		$query_vars = array('taxonomy' => 'post_tag', 'term' => $terms[0]->slug);
 		
@@ -492,8 +432,7 @@ class sitemap_xml
 
 		$posts_per_page = $wp_query->query_vars['posts_per_page'];
 		
-		foreach ( $terms as $term )
-		{
+		foreach ( $terms as $term ) {
 			$sql = "
 				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
 						CASE 
@@ -530,12 +469,10 @@ class sitemap_xml
 				.2
 				);
 			
-			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page )
-			{
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
 				$this->set_location($loc);
 
-				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ )
-				{
+				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
 					$this->write(
 						get_pagenum_link($i),
 						$stats->lastmod,
@@ -545,23 +482,21 @@ class sitemap_xml
 				}
 			}
 		}
-		
 	} # tags()
 	
 	
-	#
-	# archives()
-	#
+	/**
+	 * archives()
+	 *
+	 * @return void
+	 **/
 	
-	function archives()
-	{
+	function archives() {
 		global $wpdb;
 		global $wp_query;
 		
-		foreach ( array('yearly', 'monthly', 'daily') as $archive_type )
-		{
-			switch ( $archive_type )
-			{
+		foreach ( array('yearly', 'monthly', 'daily') as $archive_type ) {
+			switch ( $archive_type ) {
 			case 'yearly':
 				$post_date = "CAST(DATE_FORMAT(posts.post_date, '%Y-00-00') AS DATE)";
 				$post_date_stop = "DATEDIFF(CAST(NOW() AS DATE), $post_date) > 450";
@@ -603,16 +538,16 @@ class sitemap_xml
 			
 			$dates = $wpdb->get_results($sql);
 
-			if ( !$dates ) return; # empty blog
-
+			if ( !$dates ) # empty blog
+				return;
+			
 			# fetch num posts per day
 			$date = $dates[0];
 			$day = split('-', $date->post_date);
 			
 			$query_vars = array();
 			
-			switch ( $archive_type )
-			{
+			switch ( $archive_type ) {
 			case 'daily':
 				$query_vars['day'] = $day[2];
 			case 'monthly':
@@ -625,11 +560,9 @@ class sitemap_xml
 			
 			$posts_per_page = $wp_query->query_vars['posts_per_page'];
 			
-			foreach ( $dates as $date )
-			{
+			foreach ( $dates as $date ) {
 				$day = split('-', $date->post_date);
-				switch ( $archive_type )
-				{
+				switch ( $archive_type ) {
 				case 'yearly':
 					$loc = get_year_link($day[0]);
 					break;
@@ -648,12 +581,10 @@ class sitemap_xml
 					.1
 					);
 				
-				if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page )
-				{
+				if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page ) {
 					$this->set_location($loc);
 
-					for ( $i = 2; $i <= ceil($date->num_posts / $posts_per_page); $i++ )
-					{
+					for ( $i = 2; $i <= ceil($date->num_posts / $posts_per_page); $i++ ) {
 						$this->write(
 							get_pagenum_link($i),
 							$date->lastmod,
@@ -667,15 +598,18 @@ class sitemap_xml
 	} # archives()
 	
 	
-	#
-	# open()
-	#
+	/**
+	 * open()
+	 *
+	 * @return bool $success
+	 **/
 	
-	function open()
-	{
-		if ( isset($this->fp) ) $this->close($this->fp);
+	function open() {
+		if ( isset($this->fp) )
+			$this->close($this->fp);
 		
-		if ( !( $this->fp = fopen($this->file, 'w+') ) ) return false;
+		if ( !( $this->fp = fopen($this->file, 'w+') ) )
+			return false;
 		
 		$o = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
 			. ( xml_sitemaps_debug
@@ -690,14 +624,14 @@ class sitemap_xml
 	} # open()
 	
 	
-	#
-	# close()
-	#
-	
-	function close()
-	{
-		if ( isset($this->fp) )
-		{
+	/**
+	 * close()
+	 *
+	 * @return void
+	 **/
+
+	function close() {
+		if ( isset($this->fp) && $this->fp ) {
 			$o = '</urlset>';
 			
 			fwrite($this->fp, $o);
@@ -707,8 +641,7 @@ class sitemap_xml
 			$this->fp = null;
 			
 			# compress
-			if ( function_exists('gzencode') )
-			{
+			if ( function_exists('gzencode') ) {
 				$gzdata = gzencode(file_get_contents($this->file), 9);
 				$fp = fopen($this->file . '.gz', 'w+');
 				fwrite($fp, $gzdata);
@@ -724,14 +657,11 @@ class sitemap_xml
 			{
 				unlink($this->file);
 				unlink($this->file . '.gz');
-			}
-			else
-			{
+			} else {
 				rename($this->file, $file);
 				chmod($file, 0666);
 				
-				if ( function_exists('gzencode') )
-				{
+				if ( function_exists('gzencode') ) {
 					rename($this->file . '.gz', $file . '.gz');
 					chmod($file . '.gz', 0666);
 				}
@@ -740,34 +670,25 @@ class sitemap_xml
 	} # close()
 	
 	
-	#
-	# write()
-	#
+	/**
+	 * write()
+	 *
+	 * @return void
+	 **/
 	
-	function write($loc, $lastmod = null, $changefreq = null, $priority = null)
-	{
+	function write($loc, $lastmod = null, $changefreq = null, $priority = null) {
 		$o = '<url>' . "\n";
 		
-		foreach ( array('loc', 'lastmod', 'changefreq', 'priority') as $var )
-		{
-			if ( isset($$var) )
-			{
-				if ( $var == 'changefreq' && is_numeric($changefreq) )
-				{
-					if ( !$changefreq || $changefreq > 91 )
-					{
+		foreach ( array('loc', 'lastmod', 'changefreq', 'priority') as $var ) {
+			if ( isset($$var) ) {
+				if ( $var == 'changefreq' && is_numeric($changefreq) ) {
+					if ( !$changefreq || $changefreq > 91 ) {
 						$changefreq = 'yearly';
-					}
-					elseif ( $changefreq > 14)
-					{
+					} elseif ( $changefreq > 14) {
 						$changefreq = 'monthly';
-					}
-					elseif ( $changefreq > 3.5 )
-					{
+					} elseif ( $changefreq > 3.5 ) {
 						$changefreq = 'weekly';
-					}
-					else
-					{
+					} else {
 						$changefreq = 'daily';
 					}
 				}
@@ -782,29 +703,29 @@ class sitemap_xml
 	} # write()
 	
 	
-	#
-	# query()
-	#
+	/**
+	 * query()
+	 *
+	 * @param array $query_vars
+	 * @return void
+	 **/
 	
-	function query($query_vars = array())
-	{
+	function query($query_vars = array()) {
 		global $wp_query;
 		
 		# reset user
 		if ( is_user_logged_in() )
-		{
 			wp_set_current_user(0);
-		}
 		
 		# create new wp_query
+		if ( isset($wp_query) )
+			unset($wp_query);
 		$wp_query = new WP_Query();
 		
 		$query_vars = apply_filters('request', (array) $query_vars);
 		$query_string = '';
-		foreach ( array_keys((array) $query_vars) as $wpvar)
-		{
-			if ( '' != $query_vars[$wpvar] )
-			{
+		foreach ( array_keys((array) $query_vars) as $wpvar) {
+			if ( '' != $query_vars[$wpvar] ) {
 				$query_string .= (strlen($query_string) < 1) ? '' : '&';
 				if ( !is_scalar($query_vars[$wpvar]) ) // Discard non-scalars.
 					continue;
@@ -812,8 +733,7 @@ class sitemap_xml
 			}
 		}
 
-		if ( has_filter('query_string') )
-		{
+		if ( has_filter('query_string') ) {
 			$query_string = apply_filters('query_string', $query_string);
 			parse_str($query_string, $query_vars);
 		}
@@ -823,13 +743,15 @@ class sitemap_xml
 	} # query()
 	
 	
-	#
-	# set_location()
-	#
+	/**
+	 * set_location()
+	 *
+	 * @param string $location
+	 * @return void
+	 **/
 	
-	function set_location($loc)
-	{
-		$_SERVER['REQUEST_URI'] = parse_url($loc);
+	function set_location($location) {
+		$_SERVER['REQUEST_URI'] = parse_url($location);
 		$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI']['path'];
 	} # set_location()
 } # sitemap_xml
