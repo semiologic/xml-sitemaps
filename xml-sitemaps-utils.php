@@ -198,6 +198,14 @@ class sitemap_xml {
 			AND		exception.post_id IS NULL
 			";
 		
+		if ( class_exists('redirect_manager') )
+			$exclude_sql .="
+			UNION ALL
+			SELECT	redirect.post_id
+			FROM	$wpdb->postmeta as redirect
+			WHERE	redirect.meta_key = '_redirect_url'
+			";
+		
 		$sql = "
 			SELECT	posts.ID,
 					posts.post_author,
@@ -287,6 +295,14 @@ class sitemap_xml {
 			AND		exception.meta_key = '_widgets_exception'
 			WHERE	exclude.meta_key = '_widgets_exclude'
 			AND		exception.post_id IS NULL
+			";
+		
+		if ( class_exists('redirect_manager') )
+			$exclude_sql .="
+			UNION ALL
+			SELECT	redirect.post_id
+			FROM	$wpdb->postmeta as redirect
+			WHERE	redirect.meta_key = '_redirect_url'
 			";
 		
 		$sql = "
