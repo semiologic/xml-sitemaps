@@ -27,7 +27,7 @@ load_plugin_textdomain('xml-sitemaps', null, dirname(__FILE__) . '/lang');
  * @package XML Sitemaps
  **/
 
-@define('xml_sitemaps_debug', true);
+@define('xml_sitemaps_debug', false);
 
 register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
 register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
