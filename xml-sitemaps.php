@@ -40,9 +40,6 @@ if ( intval(get_option('xml_sitemaps')) ) {
 	add_action('save_post', array('xml_sitemaps', 'save_post'));
 	add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
 	
-	if ( !wp_next_scheduled('xml_sitemaps_ping') )
-		wp_schedule_event(time(), 'twice_daily', 'xml_sitemaps_ping');
-	
 	add_action('do_robots', array('xml_sitemaps', 'do_robots'));
 } else {
 	add_action('admin_notices', array('xml_sitemaps', 'inactive_notice'));
@@ -91,7 +88,10 @@ class xml_sitemaps {
 		
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
 		
-		if ( !xml_sitemap::generate() ) return;
+		wp_clear_scheduled_hook('xml_sitemaps_ping');
+		
+		if ( !xml_sitemap::generate() )
+			return;
 		
 		if ( file_exists($file . '.gz') )
 			$file = trailingslashit(get_option('home')) . 'sitemap.xml.gz';
@@ -109,8 +109,6 @@ class xml_sitemaps {
 			'http://search.yahooapis.com/SiteExplorerService/V1/updateNotification?appid=d8WFhrTV34HVHSrwjAUse9N43fR.S9DjtO5EvL3.xii4kc9tXFZc8yWf43k2XkHWMPs-&url='
 			) as $service )
 			wp_remote_fopen($file);
-		
-		update_option('xml_sitemaps_ping', 0);
 	} # ping()
 	
 	
@@ -133,7 +131,8 @@ class xml_sitemaps {
 		
 		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 		
-		update_option('xml_sitemaps_ping', 1);
+		if ( !wp_next_scheduled('xml_sitemaps_ping') )
+			wp_single_schedule_event(time() + 43200, 'xml_sitemaps_ping');
 	} # save_post()
 	
 	
