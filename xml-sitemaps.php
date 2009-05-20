@@ -40,7 +40,8 @@ if ( intval(get_option('xml_sitemaps')) ) {
 	add_action('save_post', array('xml_sitemaps', 'save_post'));
 	add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
 	
-	wp_schedule_event(time(), 'twice_daily', 'xml_sitemaps_ping');
+	if ( !wp_next_scheduled('xml_sitemaps_ping') )
+		wp_schedule_event(time(), 'twice_daily', 'xml_sitemaps_ping');
 	
 	add_action('do_robots', array('xml_sitemaps', 'do_robots'));
 } else {
