@@ -132,7 +132,7 @@ class xml_sitemaps {
 		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 		
 		if ( !wp_next_scheduled('xml_sitemaps_ping') )
-			wp_single_schedule_event(time() + 43200, 'xml_sitemaps_ping');
+			wp_schedule_single_event(time() + 43200, 'xml_sitemaps_ping');
 	} # save_post()
 	
 	
