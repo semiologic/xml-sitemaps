@@ -81,14 +81,14 @@ class xml_sitemaps {
 	 **/
 
 	function ping() {
+		wp_clear_scheduled_hook('xml_sitemaps_ping');
+		
 		if ( $_SERVER['HTTP_HOST'] == 'localhost'
 			|| !intval(get_option('blog_public'))
 			|| !intval(get_option('xml_sitemaps_ping'))
 			) return;
 		
 		$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
-		
-		wp_clear_scheduled_hook('xml_sitemaps_ping');
 		
 		if ( !xml_sitemap::generate() )
 			return;
