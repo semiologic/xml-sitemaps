@@ -675,11 +675,13 @@ class sitemap_xml {
 				unlink($this->file . '.gz');
 			} else {
 				rename($this->file, $file);
-				chmod($file, 0666);
+				$stat = stat(dirname($file));
+				$perms = $stat['mode'] & 0000666;
+				@chmod($file, $perms);
 				
 				if ( function_exists('gzencode') ) {
 					rename($this->file . '.gz', $file . '.gz');
-					chmod($file . '.gz', 0666);
+					@chmod($file . '.gz', $perms);
 				}
 			}
 		}
