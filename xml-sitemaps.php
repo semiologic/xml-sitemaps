@@ -230,16 +230,14 @@ class xml_sitemaps {
 		$site_path = isset($site_path['path']) ? rtrim($site_path['path'], '/') : '';
 		
 		$extra = <<<EOS
-
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteBase $home_path/
 RewriteRule ^(sitemap\.xml|sitemap\.xml\.gz)$ $site_path/wp-content/sitemaps/$1 [L]
-</IfModule>
-
 EOS;
 		
-		$rules = $extra . "\n\n" . $rules;
+		if ( preg_match("/RewriteBase.+\n*/i", $rules, $rewrite_base) ) {
+			$rewrite_base = end($rewrite_base);
+			$new_rewrite_base = trim($rewrite_base) . "\n\n" . trim($extra) . "\n\n";
+			$rules = str_replace($rewrite_base, $new_rewrite_base, $rules);
+		}
 		
 		return $rules;
 	} # rewrite_rules()
