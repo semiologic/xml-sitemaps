@@ -38,7 +38,7 @@ class sitemap_xml {
 			return false;
 		
 		# private site
-		if ( !intval(get_option('blog_public')) ) {
+		if ( !xml_sitemaps_debug && !intval(get_option('blog_public')) ) {
 			$this->close();
 			return true;
 		}
@@ -145,7 +145,7 @@ class sitemap_xml {
 			FROM	$wpdb->posts as posts
 			WHERE	posts.post_type = 'post'
 			AND		posts.post_status = 'publish'
-			AND		posts.password = ''
+			AND		posts.post_password = ''
 			");
 		
 		# this will be re-used in archives
@@ -188,24 +188,6 @@ class sitemap_xml {
 	function pages() {
 		global $wpdb;
 		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
-		if ( class_exists('redirect_manager') )
-			$exclude_sql .="
-			UNION ALL
-			SELECT	redirect.post_id
-			FROM	$wpdb->postmeta as redirect
-			WHERE	redirect.meta_key = '_redirect_url'
-			";
-		
 		$sql = "
 			SELECT	posts.ID,
 					posts.post_author,
@@ -241,10 +223,20 @@ class sitemap_xml {
 			ON		children.post_parent = posts.ID
 			AND		children.post_type = 'page'
 			AND		children.post_status = 'publish'
+			LEFT JOIN $wpdb->postmeta as redirect_url
+			ON		redirect_url.post_id = posts.ID
+			AND		redirect_url.meta_key = '_redirect_url'
+			LEFT JOIN $wpdb->postmeta as widgets_exclude
+			ON		widgets_exclude.post_id = posts.ID
+			AND		widgets_exclude.meta_key = '_widgets_exclude'
+			LEFT JOIN $wpdb->postmeta as widgets_exception
+			ON		widgets_exception.post_id = posts.ID
+			AND		widgets_exception.meta_key = '_widgets_exception'
 			WHERE	posts.post_type = 'page'
 			AND		posts.post_status = 'publish'
 			AND		posts.post_password = ''
-			AND		posts.ID NOT IN ( $exclude_sql )"
+			AND		redirect_url.post_id IS NULL
+			AND		( widgets_exclude.post_id IS NULL OR widgets_exception.post_id IS NOT NULL )"
 			. ( $this->front_page_id
 				? "
 			AND		posts.ID <> $this->front_page_id
@@ -287,24 +279,6 @@ class sitemap_xml {
 	function posts() {
 		global $wpdb;
 		
-		$exclude_sql = "
-			SELECT	exclude.post_id
-			FROM	$wpdb->postmeta as exclude
-			LEFT JOIN $wpdb->postmeta as exception
-			ON		exception.post_id = exclude.post_id
-			AND		exception.meta_key = '_widgets_exception'
-			WHERE	exclude.meta_key = '_widgets_exclude'
-			AND		exception.post_id IS NULL
-			";
-		
-		if ( class_exists('redirect_manager') )
-			$exclude_sql .="
-			UNION ALL
-			SELECT	redirect.post_id
-			FROM	$wpdb->postmeta as redirect
-			WHERE	redirect.meta_key = '_redirect_url'
-			";
-		
 		$sql = "
 			SELECT	posts.ID,
 					posts.post_author,
@@ -329,10 +303,20 @@ class sitemap_xml {
 			AND		revisions.post_type = 'revision'
 			AND		DATEDIFF(CAST(revisions.post_date AS DATE), CAST(posts.post_date AS DATE)) > 2
 			AND		DATE_SUB(CAST(NOW() AS DATE), INTERVAL 1 YEAR) < CAST(revisions.post_date AS DATE)
+			LEFT JOIN $wpdb->postmeta as redirect_url
+			ON		redirect_url.post_id = posts.ID
+			AND		redirect_url.meta_key = '_redirect_url'
+			LEFT JOIN $wpdb->postmeta as widgets_exclude
+			ON		widgets_exclude.post_id = posts.ID
+			AND		widgets_exclude.meta_key = '_widgets_exclude'
+			LEFT JOIN $wpdb->postmeta as widgets_exception
+			ON		widgets_exception.post_id = posts.ID
+			AND		widgets_exception.meta_key = '_widgets_exception'
 			WHERE	posts.post_type = 'post'
 			AND		posts.post_status = 'publish'
 			AND		posts.post_password = ''
-			AND		posts.ID NOT IN ( $exclude_sql )
+			AND		redirect_url.post_id IS NULL
+			AND		( widgets_exclude.post_id IS NULL OR widgets_exception.post_id IS NOT NULL )
 			GROUP BY posts.ID
 			ORDER BY posts.post_parent, posts.ID
 			";
