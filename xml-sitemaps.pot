@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.2\n"
 "Report-Msgid-Bugs-To: https://tickets.semiologic.com\n"
-"POT-Creation-Date: 2009-05-24 14:27+0200\n"
+"POT-Creation-Date: 2009-06-02 20:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,26 +16,26 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: xml-sitemaps.php:285
+#: xml-sitemaps.php:283
 msgid ""
 "XML Sitemaps requires MySQL 4.1.1 or later. It's time to <a href=\"http://"
 "www.semiologic.com/resources/wp-basics/wordpress-server-requirements/"
 "\">change hosts</a> if yours doesn't want to upgrade."
 msgstr ""
 
-#: xml-sitemaps.php:292
+#: xml-sitemaps.php:290
 msgid ""
 "XML Sitemaps requires that you enable a fancy url structure. under "
 "Settings / Permalinks."
 msgstr ""
 
-#: xml-sitemaps.php:299
+#: xml-sitemaps.php:297
 msgid ""
 "XML Sitemaps is not active on your site because of your site's privacy "
 "settings (Settings / Privacy)."
 msgstr ""
 
-#: xml-sitemaps.php:307
+#: xml-sitemaps.php:305
 msgid ""
 "XML Sitemaps is not active on your site. Please make the following file and "
 "folder writable by the server:"
