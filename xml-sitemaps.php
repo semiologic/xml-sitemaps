@@ -277,7 +277,8 @@ EOS;
 	
 	function inactive_notice() {
 		if ( !xml_sitemaps::activate() ) {
-			if ( version_compare(mysql_get_server_info(), '4.1.1', '<') ) {
+			global $wpdb;
+			if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
 				echo '<div class="error">'
 					. '<p>'
 					. __('XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
@@ -326,7 +327,8 @@ EOS;
 		$active = true;
 		
 		# check mysql version
-		if ( version_compare(mysql_get_server_info(), '4.1.1', '<') ) {
+		global $wpdb;
+		if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
 			$active = false;
 		} else {
 			# clean up
