@@ -6,7 +6,7 @@ Description: Automatically generates XML Sitemaps for your site and notifies sea
 Version: 1.2.1 RC
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
-Text Domain: xml-sitemaps-info
+Text Domain: xml-sitemaps
 Domain Path: /lang
 */
 
