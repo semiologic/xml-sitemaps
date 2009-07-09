@@ -129,7 +129,7 @@ class sitemap_xml {
 			
 			$loc = user_trailingslashit(get_option('home'));
 		} else {
-			$loc = get_permalink($this->blog_page_id);
+			$loc = apply_filters('the_permalink', get_permalink($this->blog_page_id));
 		}
 		
 		$stats = $wpdb->get_row("
@@ -261,7 +261,7 @@ class sitemap_xml {
 		
 		foreach ( $posts as $post ) {
 			$this->write(
-				get_permalink($post->ID),
+				apply_filters('the_permalink', get_permalink($post->ID)),
 				$post->lastmod,
 				$post->changefreq,
 				$post->priority
@@ -329,7 +329,7 @@ class sitemap_xml {
 		
 		foreach ( $posts as $post ) {
 			$this->write(
-				get_permalink($post->ID),
+				apply_filters('the_permalink', get_permalink($post->ID)),
 				$post->lastmod,
 				$post->changefreq,
 				.6

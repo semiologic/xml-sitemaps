@@ -19,7 +19,13 @@ Likewise, there are no options screen because there are set automatically. The X
 
 Pings occur automatically, on an hourly basis, if the sitemap file is updated.
 
-Lastly, and contrary to the zillions of plugins that try to do the same as this one, this plugin will use the WP internals to determine the number of blog, category and tag pages on your site. This means it'll play well with the likes of custom query string or [Semiologic SEO](http://www.semiologic.com/software/).
+Lastly, and contrary to the zillions of plugins that try to do the same as this one, this plugin will use the WP internals to determine the number of blog, category and tag pages on your site. This means it'll play well with the likes of custom query string or [Semiologic SEO](http://www.semiologic.com/software/sem-seo/).
+
+= Help Me! =
+
+The [Semiologic forum](http://forum.semiologic.com) is the best place to report issues. Please note, however, that while community members and I do our best to answer all queries, we're assisting you on a voluntary basis.
+
+If you require more dedicated assistance, consider using [Semiologic Pro](http://www.getsemiologic.com).
 
 
 == Installation ==
@@ -29,8 +35,13 @@ Lastly, and contrary to the zillions of plugins that try to do the same as this 
 1. The plugin will then guide you through the installation process if any manual steps are necessary
 
 
-= Help Me! =
+== Change Log ==
 
-The [Semiologic forum](http://forum.semiologic.com) is the best place to report issues. Please note, however, that while community members and I do our best to answer all queries, we're assisting you on a voluntary basis.
+= 1.3 =
 
-If you require more dedicated assistance, consider using [Semiologic Pro](http://www.getsemiologic.com).
+- Apply permalink filters on post and page links
+- Fix a conflict with themes and plugins that mess around with a blog's privacy settings on 404 errors
+
+= 1.2 =
+
+- Drop attachments from the sitemap
