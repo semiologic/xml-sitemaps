@@ -20,7 +20,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 **/
 
 
-load_plugin_textdomain('xml-sitemaps', null, dirname(__FILE__) . '/lang');
+load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
 
 /**
@@ -53,7 +53,7 @@ if ( intval(get_option('xml_sitemaps')) ) {
 add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
 add_action('update_option_blog_public', array('xml_sitemaps', 'reactivate'));
 add_action('update_option_active_plugins', array('xml_sitemaps', 'reactivate'));
-add_action('after_db_upgrade_version', array('xml_sitemaps', 'reactivate'));
+add_action('after_db_upgrade', array('xml_sitemaps', 'reactivate'));
 add_action('flush_cache', array('xml_sitemaps', 'reactivate'));
 
 class xml_sitemaps {
