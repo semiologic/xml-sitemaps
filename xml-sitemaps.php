@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.3 RC
+Version: 1.3 RC2
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -127,8 +127,8 @@ class xml_sitemaps {
 	 * @return void
 	 **/
 
-	function save_post($post_ID) {
-		$post = get_post($post_ID);
+	function save_post($post_id) {
+		$post = get_post($post_id);
 		
 		# ignore revisions
 		if ( $post->post_type == 'revision' )
@@ -141,7 +141,7 @@ class xml_sitemaps {
 		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 		
 		if ( !wp_next_scheduled('xml_sitemaps_ping') )
-			wp_schedule_single_event(time() + 43200, 'xml_sitemaps_ping');
+			wp_schedule_single_event(time() + 14400, 'xml_sitemaps_ping'); // 4 hours
 	} # save_post()
 	
 	
@@ -152,8 +152,8 @@ class xml_sitemaps {
 	 **/
 
 	function generate() {
-		if ( function_exists('memory_get_usage') && ( (int) @ini_get('memory_limit') < 128 ) )
-			@ini_set('memory_limit', '128M');
+		if ( function_exists('memory_get_usage') && ( (int) @ini_get('memory_limit') < 256 ) )
+			@ini_set('memory_limit', '256M');
 		
 		include_once dirname(__FILE__) . '/xml-sitemaps-utils.php';
 		
@@ -293,14 +293,14 @@ EOS;
 				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-permalink.php') === false ) {
 					echo '<div class="error">'
 						. '<p>'
-						. __('XML Sitemaps requires that you enable a fancy url structure. under Settings / Permalinks.', 'xml-sitemaps')
+						. __('XML Sitemaps requires that you enable a fancy url structure, under Settings / Permalinks.', 'xml-sitemaps')
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
 			} elseif ( !intval(get_option('blog_public')) ) {
 				echo '<div class="error">'
 					. '<p>'
-					. __('XML Sitemaps is not active on your site because of your site\'s privacy settings (Settings / Privacy).', 'xml-sitemaps')
+					. sprintf(__('XML Sitemaps is not active on your site because of your site\'s privacy settings (<a href="%s">Settings / Privacy</a>).', 'xml-sitemaps'), 'options-privacy.php')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps')
@@ -328,7 +328,6 @@ EOS;
 	
 	function activate() {
 		# reset status
-		$active = get_option('xml_sitemaps');
 		$active = true;
 		
 		# check mysql version

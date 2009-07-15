@@ -350,7 +350,8 @@ class sitemap_xml {
 		
 		$terms = get_terms('category', array('hide_empty' => true, 'exclude' => defined('main_cat_id') ? main_cat_id : ''));
 		
-		if ( !$terms ) return; # no cats
+		if ( !$terms ) # no cats
+			return;
 
 		foreach ( $terms as $term ) {
 			$sql = "
