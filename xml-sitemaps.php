@@ -205,8 +205,9 @@ class xml_sitemaps {
 			}
 			
 			# Reset WP
-			$GLOBALS['wp_filter'] = array();
-			while ( @ob_end_clean() );
+			$levels = ob_get_level();
+			for ($i=0; $i<$levels; $i++)
+				ob_end_clean();
 
 			status_header(200);
 			if ( strpos($sitemap, '.gz') !== false ) {
