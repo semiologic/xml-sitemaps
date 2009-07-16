@@ -281,6 +281,9 @@ EOS;
 	 **/
 	
 	function inactive_notice() {
+		if ( !current_user_can('manage_options') )
+			return;
+		
 		if ( !xml_sitemaps::activate() ) {
 			global $wpdb;
 			if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
@@ -293,16 +296,18 @@ EOS;
 				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-permalink.php') === false ) {
 					echo '<div class="error">'
 						. '<p>'
-						. __('XML Sitemaps requires that you enable a fancy url structure, under Settings / Permalinks.', 'xml-sitemaps')
+						. sprintf(__('XML Sitemaps requires that you enable a fancy url structure, under <a href="%s">Settings / Permalinks</a>.', 'xml-sitemaps'), 'options-permalink.php')
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
 			} elseif ( !intval(get_option('blog_public')) ) {
-				echo '<div class="error">'
-					. '<p>'
-					. sprintf(__('XML Sitemaps is not active on your site because of your site\'s privacy settings (<a href="%s">Settings / Privacy</a>).', 'xml-sitemaps'), 'options-privacy.php')
-					. '</p>' . "\n"
-					. '</div>' . "\n\n";
+				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-privacy.php') === false ) {
+					echo '<div class="error">'
+						. '<p>'
+						. sprintf(__('XML Sitemaps is not active on your site because of your site\'s privacy settings (<a href="%s">Settings / Privacy</a>).', 'xml-sitemaps'), 'options-privacy.php')
+						. '</p>' . "\n"
+						. '</div>' . "\n\n";
+				}
 			} elseif ( !xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps')
 				|| !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps')
 				|| !is_writable('.htaccess') ){
