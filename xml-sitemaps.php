@@ -413,7 +413,7 @@ EOS;
 	 **/
 	
 	function mkdir($dir) {
-		return wp_mkdir_p($dir);
+		return wp_mkdir_p(rtrim($dir, '/'));
 	} # mkdir()
 	
 	
@@ -424,6 +424,8 @@ EOS;
 	 **/
 	
 	function rm($dir) {
+		$dir = rtrim($dir, '/');
+		
 		if ( !file_exists($dir) )
 			return true;
 		
