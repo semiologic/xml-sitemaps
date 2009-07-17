@@ -269,7 +269,7 @@ EOS;
 		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )
 			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 		
-		return save_mod_rewrite_rules()
+		return @save_mod_rewrite_rules()
 			&& get_option('permalink_structure')
 			&& intval(get_option('blog_public'));
 	} # save_rewrite_rules()
@@ -291,6 +291,12 @@ EOS;
 				echo '<div class="error">'
 					. '<p>'
 					. __('XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
+					. '</p>' . "\n"
+					. '</div>' . "\n\n";
+			} elseif ( @ini_get('safe_mode') ) {
+				echo '<div class="error">'
+					. '<p>'
+					. __('Safe mode is used on your server. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !get_option('permalink_structure') ) {
@@ -339,6 +345,8 @@ EOS;
 		# check mysql version
 		global $wpdb;
 		if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
+			$active = false;
+		} elseif ( ini_get('safe_mode') ) {
 			$active = false;
 		} else {
 			# clean up
