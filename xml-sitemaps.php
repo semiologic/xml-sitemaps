@@ -262,8 +262,7 @@ EOS;
 			$wp_rewrite =& new WP_Rewrite;
 		
 		if ( !function_exists('save_mod_rewrite_rules') || !function_exists('get_home_path') ) {
-			include_once ABSPATH . 'wp-admin/includes/file.php';
-			include_once ABSPATH . 'wp-admin/includes/misc.php';
+			include_once ABSPATH . 'wp-admin/includes/admin.php';
 		}
 		
 		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )
@@ -287,6 +286,7 @@ EOS;
 		
 		if ( !xml_sitemaps::activate() ) {
 			global $wpdb;
+			
 			if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
 				echo '<div class="error">'
 					. '<p>'
