@@ -22,39 +22,17 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
+define('xml_sitemaps_version', '1.3');
+
+if ( !defined('xml_sitemaps_debug') )
+	define('xml_sitemaps_debug', false);
+
 
 /**
  * xml_sitemaps
  *
  * @package XML Sitemaps
  **/
-
-if ( !defined('xml_sitemaps_debug') )
-	define('xml_sitemaps_debug', false);
-
-register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
-register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
-
-define('xml_sitemaps_version', '1.3');
-
-if ( intval(get_option('xml_sitemaps')) ) {
-	if ( !xml_sitemaps_debug )
-		add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
-	
-	add_action('template_redirect', array('xml_sitemaps', 'template_redirect'));
-	add_action('save_post', array('xml_sitemaps', 'save_post'));
-	add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
-	
-	add_action('do_robots', array('xml_sitemaps', 'do_robots'));
-} else {
-	add_action('admin_notices', array('xml_sitemaps', 'inactive_notice'));
-}
-
-add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
-add_action('update_option_blog_public', array('xml_sitemaps', 'reactivate'));
-add_action('update_option_active_plugins', array('xml_sitemaps', 'reactivate'));
-add_action('after_db_upgrade', array('xml_sitemaps', 'reactivate'));
-add_action('flush_cache', array('xml_sitemaps', 'reactivate'));
 
 class xml_sitemaps {
 	/**
@@ -476,4 +454,26 @@ EOS;
 		return ' AND ( 1 = 0 ) ';
 	}
 } # xml_sitemaps
+
+register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
+register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
+
+if ( intval(get_option('xml_sitemaps')) ) {
+	if ( !xml_sitemaps_debug )
+		add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+	
+	add_action('template_redirect', array('xml_sitemaps', 'template_redirect'));
+	add_action('save_post', array('xml_sitemaps', 'save_post'));
+	add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
+	
+	add_action('do_robots', array('xml_sitemaps', 'do_robots'));
+} else {
+	add_action('admin_notices', array('xml_sitemaps', 'inactive_notice'));
+}
+
+add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
+add_action('update_option_blog_public', array('xml_sitemaps', 'reactivate'));
+add_action('update_option_active_plugins', array('xml_sitemaps', 'reactivate'));
+add_action('after_db_upgrade', array('xml_sitemaps', 'reactivate'));
+add_action('flush_cache', array('xml_sitemaps', 'reactivate'));
 ?>
