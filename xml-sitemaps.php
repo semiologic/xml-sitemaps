@@ -234,10 +234,8 @@ EOS;
 	 **/
 	
 	function save_rewrite_rules() {
-		global $wp_rewrite;
-		
-		if ( !isset($wp_rewrite) )
-			$wp_rewrite =& new WP_Rewrite;
+		if ( !isset($GLOBALS['wp_rewrite']) )
+			$GLOBALS['wp_rewrite'] =& new WP_Rewrite;
 		
 		if ( !function_exists('save_mod_rewrite_rules') || !function_exists('get_home_path') ) {
 			include_once ABSPATH . 'wp-admin/includes/admin.php';
