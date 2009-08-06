@@ -246,7 +246,7 @@ EOS;
 		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )
 			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
 		
-		return @save_mod_rewrite_rules()
+		return save_mod_rewrite_rules()
 			&& get_option('permalink_structure')
 			&& intval(get_option('blog_public'));
 	} # save_rewrite_rules()
@@ -408,9 +408,9 @@ EOS;
 			return true;
 		
 		if ( is_file($dir) )
-			return @unlink($dir);
+			return unlink($dir);
 		
-		if ( !( $handle = @opendir($dir) ) )
+		if ( !( $handle = opendir($dir) ) )
 			return false;
 		
 		while ( ( $file = readdir($handle) ) !== false ) {
@@ -425,7 +425,7 @@ EOS;
 		
 		closedir($handle);
 		
-		return @rmdir($dir);
+		return rmdir($dir);
 	} # rm()
 	
 	
