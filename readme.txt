@@ -1,9 +1,9 @@
 === XML Sitemaps ===
 Contributors: Denis-de-Bernardy
-Donate link: http://buy.semiologic.com/drink
+Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
 Requires at least: 2.7
-Tested up to: 2.8.3
+Tested up to: 2.8.4
 Stable tag: trunk
 
 Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
