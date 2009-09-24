@@ -46,6 +46,10 @@ It's generated only when explicitly requests, by visiting domain.com/sitemaps.xm
 
 == Change Log ==
 
+= 1.4.1 =
+
+- Harden a file permission check
+
 = 1.4 =
 
 - Improve clean-up procedure
