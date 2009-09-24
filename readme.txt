@@ -2,7 +2,7 @@
 Contributors: Denis-de-Bernardy
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
-Requires at least: 2.7
+Requires at least: 2.8
 Tested up to: 2.8.4
 Stable tag: trunk
 
@@ -35,7 +35,22 @@ If you require more dedicated assistance, consider using [Semiologic Pro](http:/
 1. The plugin will then guide you through the installation process if any manual steps are necessary
 
 
+== FAQ ==
+
+= The Sitemap isn't getting generated =
+
+Actually, it is. But it's not refreshed each time you save your posts and pages. Doing so would be far too resource intensive on large sites.
+
+It's generated only when explicitly requests, by visiting domain.com/sitemaps.xml, and cached in wp-content/sitemaps -- until it needs to be refreshed once again.
+
+
 == Change Log ==
+
+= 1.4 =
+
+- Improve clean-up procedure
+- Fix Paging
+- Ping throttling tweaks: up to once every 10 minutes
 
 = 1.3 =
 

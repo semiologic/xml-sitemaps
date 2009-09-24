@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.3
+Version: 1.4
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.3');
+define('xml_sitemaps_version', '1.4');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -116,10 +116,10 @@ class xml_sitemaps {
 		if ( $post->post_status != 'publish' || $post->post_password != '' )
 			return;
 		
-		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
+		xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps');
 		
 		if ( !wp_next_scheduled('xml_sitemaps_ping') )
-			wp_schedule_single_event(time() + 14400, 'xml_sitemaps_ping'); // 4 hours
+			wp_schedule_single_event(time() + 600, 'xml_sitemaps_ping'); // 10 minutes
 	} # save_post()
 	
 	
@@ -172,7 +172,7 @@ class xml_sitemaps {
 			) {
 			$dir = WP_CONTENT_DIR . '/sitemaps/';
 			
-			if ( !is_dir($dir) && !xml_sitemaps::activate() )
+			if ( !xml_sitemaps::clean($dir) )
 				return;
 			
 			$sitemap = basename($_SERVER['REQUEST_URI']);
@@ -184,9 +184,9 @@ class xml_sitemaps {
 			
 			# Reset WP
 			$levels = ob_get_level();
-			for ($i=0; $i<$levels; $i++)
+			for ( $i = 0; $i < $levels; $i++ )
 				ob_end_clean();
-
+			
 			status_header(200);
 			if ( strpos($sitemap, '.gz') !== false ) {
 				header('Content-Type: application/x-gzip');
@@ -291,8 +291,7 @@ EOS;
 						. '</p>' . "\n"
 						. '</div>' . "\n\n";
 				}
-			} elseif ( !xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps')
-				|| !xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps')
+			} elseif ( !xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps')
 				|| !is_writable('.htaccess') ){
 				echo '<div class="error">'
 					. '<p>'
@@ -326,11 +325,7 @@ EOS;
 			$active = false;
 		} else {
 			# clean up
-			$active &= xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
-			
-			# create folder
-			if ( $active )
-				$active &= xml_sitemaps::mkdir(WP_CONTENT_DIR . '/sitemaps');
+			$active &= xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps');
 			
 			# insert rewrite rules
 			if ( $active && !xml_sitemaps_debug )
@@ -408,6 +403,23 @@ EOS;
 		if ( is_file($dir) )
 			return unlink($dir);
 		
+		return xml_sitemaps::clean($dir) && rmdir($dir);
+	} # rm()
+	
+	
+	/**
+	 * clean()
+	 *
+	 * @param string $dir
+	 * @return bool success
+	 **/
+
+	function clean($dir) {
+		if ( !file_exists($dir) )
+			return xml_sitemaps::mkdir($dir);
+		elseif ( !is_dir($dir) )
+			return false;
+		
 		if ( !( $handle = opendir($dir) ) )
 			return false;
 		
@@ -423,8 +435,8 @@ EOS;
 		
 		closedir($handle);
 		
-		return rmdir($dir);
-	} # rm()
+		return true;
+	} # clean()
 	
 	
 	/**

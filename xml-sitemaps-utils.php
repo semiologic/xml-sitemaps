@@ -625,6 +625,7 @@ class sitemap_xml {
 				? '<!-- Debug: XML Sitemaps ' . xml_sitemaps_version . ' -->'
 				: '<!-- Generator: XML Sitemaps ' . xml_sitemaps_version . ' -->'
 				) . "\n"
+			. '<?xml-stylesheet type="text/xsl" href="' . plugin_dir_url(__FILE__) . 'xml-sitemaps.xsl" ?>' . "\n"
 			. '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 		
 		fwrite($this->fp, $o);
@@ -725,16 +726,14 @@ class sitemap_xml {
 	 **/
 	
 	function query($query_vars = array()) {
-		global $wp_query;
-		
 		# reset user
 		if ( is_user_logged_in() )
 			wp_set_current_user(0);
 		
 		# create new wp_query
-		if ( isset($wp_query) )
-			unset($wp_query);
-		$wp_query = new WP_Query();
+		$GLOBALS['wp_query'] = new WP_Query();
+		
+		global $wp_query;
 		
 		$query_vars = apply_filters('request', (array) $query_vars);
 		$query_string = '';
