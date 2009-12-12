@@ -46,6 +46,10 @@ It's generated only when explicitly requests, by visiting domain.com/sitemaps.xm
 
 == Change Log ==
 
+= 1.5.1 =
+
+- Improve memcached support
+
 = 1.5 =
 
 - Fix an ugly typo that prevented the plugin from working in some circumstances
