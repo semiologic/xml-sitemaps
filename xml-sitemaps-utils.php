@@ -66,6 +66,16 @@ class sitemap_xml {
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		
+		#
+		# to add pages in your plugin, create a function like so:
+		# function my_sitemap_pages(&$sitemap) {
+		#   $sitemap->write($loc, $lastmod, $changefreq, $priority);
+		# }
+		# add_action('xml_sitemaps', 'my_sitemap_pages');
+		#
+		
+		do_action_ref_array('xml_sitemaps', array(&$this));
+		
 		$this->close();
 		return true;
 	} # generate()
