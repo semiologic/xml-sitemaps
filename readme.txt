@@ -41,7 +41,7 @@ If you require more dedicated assistance, consider using [Semiologic Pro](http:/
 
 Actually, it is. But it's not refreshed each time you save your posts and pages. Doing so would be far too resource intensive on large sites.
 
-It's generated only when explicitly requests, by visiting domain.com/sitemaps.xml, and cached in wp-content/sitemaps -- until it needs to be refreshed once again.
+It's generated only when explicitly requested, by visiting domain.com/sitemaps.xml, and then cached in wp-content/sitemaps -- until it needs to be refreshed once again.
 
 
 == Change Log ==
