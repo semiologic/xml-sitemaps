@@ -204,9 +204,6 @@ class xml_sitemaps {
 	 **/
 	
 	function rewrite_rules($rules) {
-		$home_path = parse_url(get_option('home'));
-		$home_path = isset($home_path['path']) ? rtrim($home_path['path'], '/') : '';
-
 		$site_path = parse_url(get_option('siteurl'));
 		$site_path = isset($site_path['path']) ? rtrim($site_path['path'], '/') : '';
 		
