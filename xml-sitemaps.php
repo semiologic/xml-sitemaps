@@ -204,11 +204,11 @@ class xml_sitemaps {
 	 **/
 	
 	function rewrite_rules($rules) {
-		$site_path = parse_url(get_option('siteurl'));
-		$site_path = isset($site_path['path']) ? rtrim($site_path['path'], '/') : '';
+		$sitemaps_url = parse_url(WP_CONTENT_URL . '/sitemaps');
+		$sitemaps_url = $site_path['path'];
 		
 		$extra = <<<EOS
-RewriteRule ^(sitemap\.xml|sitemap\.xml\.gz)$ $site_path/wp-content/sitemaps/$1 [L]
+RewriteRule ^(sitemap\.xml|sitemap\.xml\.gz)$ $sitemaps_url/$1 [L]
 EOS;
 		
 		if ( preg_match("/RewriteBase.+\n*/i", $rules, $rewrite_base) ) {
