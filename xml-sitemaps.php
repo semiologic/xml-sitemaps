@@ -263,10 +263,10 @@ EOS;
 					. __('XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
-			} elseif ( @ini_get('safe_mode') ) {
+			} elseif ( @ini_get('safe_mode') || @ini_get('open_basedir') ) {
 				echo '<div class="error">'
 					. '<p>'
-					. __('Safe mode is used on your server. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
+					. __('Safe mode or an open_basedir restriction is used on your server. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !get_option('permalink_structure') ) {
@@ -315,7 +315,7 @@ EOS;
 		global $wpdb;
 		if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
 			$active = false;
-		} elseif ( ini_get('safe_mode') ) {
+		} elseif ( @ini_get('safe_mode') || @ini_get('open_basedir') ) {
 			$active = false;
 		} else {
 			# clean up
