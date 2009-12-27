@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.5.1 RC
+Version: 1.5.1 RC2
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.4');
+define('xml_sitemaps_version', '1.5');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -204,11 +204,13 @@ class xml_sitemaps {
 	 **/
 	
 	function rewrite_rules($rules) {
+		$sitemaps_path = WP_CONTENT_DIR . '/sitemaps';
 		$sitemaps_url = parse_url(WP_CONTENT_URL . '/sitemaps');
-		$sitemaps_url = $site_path['path'];
+		$sitemaps_url = $sitemaps_url['path'];
 		
 		$extra = <<<EOS
-RewriteRule ^(sitemap\.xml|sitemap\.xml\.gz)$ $sitemaps_url/$1 [L]
+RewriteCond $sitemaps_path/%{REQUEST_URI} -f
+RewriteRule ^ $sitemaps_url/%{REQUEST_URI} [L]
 EOS;
 		
 		if ( preg_match("/RewriteBase.+\n*/i", $rules, $rewrite_base) ) {

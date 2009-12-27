@@ -49,6 +49,7 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 = 1.5.1 =
 
 - Improve memcached support
+- Handle custom content dir properly
 - Add a filter so other plugins can attach pages
 
 = 1.5 =
