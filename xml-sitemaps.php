@@ -209,8 +209,8 @@ class xml_sitemaps {
 		$sitemaps_url = $sitemaps_url['path'];
 		
 		$extra = <<<EOS
-RewriteCond $sitemaps_path/%{REQUEST_URI} -f
-RewriteRule ^ $sitemaps_url/%{REQUEST_URI} [L]
+RewriteCond $sitemaps_path%{REQUEST_URI} -f
+RewriteRule ^ $sitemaps_url%{REQUEST_URI} [L]
 EOS;
 		
 		if ( preg_match("/RewriteBase.+\n*/i", $rules, $rewrite_base) ) {
