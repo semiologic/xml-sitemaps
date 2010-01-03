@@ -672,10 +672,18 @@ class sitemap_xml {
 			}
 			
 			# move
-			$file = WP_CONTENT_DIR . '/sitemaps/sitemap.xml';
+			$dir = WP_CONTENT_DIR . '/sitemaps';
+			if ( function_exists('is_site_admin') )
+				$dir .= '/' . $_SERVER['HTTP_HOST'];
+			$home_path = parse_url(get_option('home'));
+			$home_path = isset($home_path['path']) ? rtrim($home_path['path'], '/') : '';
+			$dir .= $home_path;
+			$file = $dir . '/sitemap.xml';
 			
-			if ( !xml_sitemaps::rm($file)
+			if ( !wp_mkdir_p($dir)
+				|| !xml_sitemaps::rm($file)
 				|| !xml_sitemaps::rm($file . '.gz')
+				|| strpos($_SERVER['HTTP_HOST'], '/') !== false
 				)
 			{
 				unlink($this->file);

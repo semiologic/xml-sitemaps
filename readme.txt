@@ -46,8 +46,9 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 == Change Log ==
 
-= 1.5.1 =
+= 1.6 =
 
+- WPMU compat
 - Improve memcached support
 - Handle custom content dir properly
 - Add a filter so other plugins can attach pages

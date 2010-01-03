@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.5.1 RC3
+Version: 1.6 beta
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.5');
+define('xml_sitemaps_version', '1.6');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -166,8 +166,14 @@ class xml_sitemaps {
 				$_SERVER['REQUEST_URI'],
 				array($home_path . '/sitemap.xml', $home_path . '/sitemap.xml.gz')
 				)
+			&& strpos($_SERVER['HTTP_HOST'], '/') === false
 			) {
-			$dir = WP_CONTENT_DIR . '/sitemaps/';
+			$dir = WP_CONTENT_DIR . '/sitemaps';
+			if ( function_exists('is_site_admin') )
+				$dir .= '/' . $_SERVER['HTTP_HOST'];
+			$home_path = parse_url(get_option('home'));
+			$home_path = isset($home_path['path']) ? rtrim($home_path['path'], '/') : '';
+			$dir .= $home_path;
 			
 			if ( !xml_sitemaps::clean($dir) )
 				return;
@@ -210,7 +216,7 @@ class xml_sitemaps {
 		
 		$extra = <<<EOS
 RewriteCond $sitemaps_path%{REQUEST_URI} -f
-RewriteRule ^ $sitemaps_url%{REQUEST_URI} [L]
+RewriteRule \.xml(\.gz)?$ $sitemaps_url%{REQUEST_URI} [L]
 EOS;
 		
 		if ( preg_match("/RewriteBase.+\n*/i", $rules, $rewrite_base) ) {
