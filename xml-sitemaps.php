@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.6
+Version: 1.6.1 RC
 Author: Denis de Bernardy
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -169,18 +169,16 @@ class xml_sitemaps {
 			&& strpos($_SERVER['HTTP_HOST'], '/') === false
 			) {
 			$dir = WP_CONTENT_DIR . '/sitemaps';
-			if ( function_exists('is_site_admin') && defined('VHOST') && VHOST )
+			if ( function_exists('is_site_admin') && defined('VHOST') && VHOST && VHOST != 'off' )
 				$dir .= '/' . $_SERVER['HTTP_HOST'];
-			$home_path = parse_url(get_option('home'));
-			$home_path = isset($home_path['path']) ? rtrim($home_path['path'], '/') : '';
 			$dir .= $home_path;
 			
 			if ( !xml_sitemaps::clean($dir) )
 				return;
 			
-			$sitemap = basename($_SERVER['REQUEST_URI']);
+			$sitemap = $dir . '/' . basename($_SERVER['REQUEST_URI']);
 			
-			if ( xml_sitemaps_debug || !file_exists(WP_CONTENT_DIR . '/sitemaps/' . $sitemap) ) {
+			if ( xml_sitemaps_debug || !file_exists($sitemap) ) {
 				if ( !xml_sitemaps::generate() )
 					return;
 			}
@@ -196,7 +194,7 @@ class xml_sitemaps {
 			} else {
 				header('Content-Type:text/xml; charset=utf-8');
 			}
-			readfile(WP_CONTENT_DIR . '/sitemaps/' . $sitemap);
+			readfile($sitemap);
 			die;
 		}
 	} # template_redirect()
@@ -271,10 +269,10 @@ EOS;
 					. __('XML Sitemaps requires MySQL 4.1.1 or later. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
-			} elseif ( @ini_get('safe_mode') || @ini_get('open_basedir') ) {
+			} elseif ( ( @ini_get('safe_mode') ||  @ini_get('open_basedir') ) && !wp_mkdir_p(WP_CONTENT_DIR . '/sitemaps') ) {
 				echo '<div class="error">'
 					. '<p>'
-					. __('Safe mode or an open_basedir restriction is used on your server. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
+					. __('Safe mode or open_basedir restriction on your server prevents XML Sitemaps from creating the folders that it needs. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.', 'xml-sitemaps')
 					. '</p>' . "\n"
 					. '</div>' . "\n\n";
 			} elseif ( !get_option('permalink_structure') ) {
@@ -323,7 +321,7 @@ EOS;
 		global $wpdb;
 		if ( version_compare($wpdb->db_version(), '4.1.1', '<') ) {
 			$active = false;
-		} elseif ( @ini_get('safe_mode') || @ini_get('open_basedir') ) {
+		} elseif ( ( @ini_get('safe_mode') || @ini_get('open_basedir') ) && !wp_mkdir_p(WP_CONTENT_DIR . '/sitemaps') ) {
 			$active = false;
 		} else {
 			# clean up
