@@ -623,7 +623,8 @@ class sitemap_xml {
 			return false;
 		
 		global $wp_filter;
-		if ( is_array($wp_filter['option_blog_public']) ) {
+		if ( isset($wp_filter['option_blog_public']) &&
+		    is_array($wp_filter['option_blog_public']) ) {
 			$this->filter_backup = $wp_filter['option_blog_public'];
 		} else {
 			$this->filter_backup = array();
