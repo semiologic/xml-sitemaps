@@ -46,6 +46,10 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 == Change Log ==
 
+= 1.6.2 =
+
+- WP 3.0 compat
+
 = 1.6.1 =
 
 - Improve safe_mode and open_basedir handling
