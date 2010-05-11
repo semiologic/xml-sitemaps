@@ -674,7 +674,7 @@ class sitemap_xml {
 			
 			# move
 			$dir = WP_CONTENT_DIR . '/sitemaps';
-			if ( function_exists('is_site_admin') && defined('VHOST') && VHOST && VHOST != 'off' )
+			if ( defined('SUBDOMAIN_INSTALL') && SUBDOMAIN_INSTALL )
 				$dir .= '/' . $_SERVER['HTTP_HOST'];
 			$home_path = parse_url(get_option('home'));
 			$home_path = isset($home_path['path']) ? rtrim($home_path['path'], '/') : '';

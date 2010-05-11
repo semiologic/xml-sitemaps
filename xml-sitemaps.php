@@ -169,7 +169,7 @@ class xml_sitemaps {
 			&& strpos($_SERVER['HTTP_HOST'], '/') === false
 			) {
 			$dir = WP_CONTENT_DIR . '/sitemaps';
-			if ( function_exists('is_site_admin') && defined('VHOST') && VHOST && VHOST != 'off' )
+			if ( defined('SUBDOMAIN_INSTALL') && SUBDOMAIN_INSTALL )
 				$dir .= '/' . $_SERVER['HTTP_HOST'];
 			$dir .= $home_path;
 			
