@@ -3,8 +3,8 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.6.2
-Author: Denis de Bernardy
+Version: 1.7
+Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
 Domain Path: /lang
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.6');
+define('xml_sitemaps_version', '1.7');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -91,19 +91,19 @@ class xml_sitemaps {
 		
 		foreach ( array(
 			'http://www.google.com/webmasters/sitemaps/ping?sitemap=',
-			'http://webmaster.live.com/ping.aspx?siteMap=',
-			'http://submissions.ask.com/ping?sitemap=',
-			'http://search.yahooapis.com/SiteExplorerService/V1/updateNotification?appid=d8WFhrTV34HVHSrwjAUse9N43fR.S9DjtO5EvL3.xii4kc9tXFZc8yWf43k2XkHWMPs-&url='
+			'http://http://www.bing.com/webmaster/ping.aspx?siteMap=',
+			'http://submissions.ask.com/ping?sitemap='
 			) as $service )
 			wp_remote_fopen($file);
 	} # ping()
-	
-	
-	/**
-	 * save_post()
-	 *
-	 * @return void
-	 **/
+
+
+    /**
+     * save_post()
+     *
+     * @param $post_id
+     * @return void
+     */
 
 	function save_post($post_id) {
 		$post = get_post($post_id);
@@ -375,26 +375,28 @@ EOS;
 		# reset status
 		update_option('xml_sitemaps', 0);
 	} # deactivate()
-	
-	
-	/**
-	 * mkdir()
-	 *
-	 * @return bool $success
-	 **/
+
+
+    /**
+     * mkdir()
+     *
+     * @param $dir
+     * @return bool $success
+     */
 	
 	function mkdir($dir) {
 		return wp_mkdir_p(rtrim($dir, '/'));
 	} # mkdir()
+
+
+    /**
+     * rm()
+     *
+     * @param $dir
+     * @return bool $success
+     */
 	
-	
-	/**
-	 * rm()
-	 *
-	 * @return bool $success
-	 **/
-	
-	function rm($dir) {
+	static function rm($dir) {
 		$dir = rtrim($dir, '/');
 		
 		if ( !file_exists($dir) )
@@ -451,14 +453,15 @@ EOS;
 		
 		return "$wpdb->posts.ID, $wpdb->posts.post_author, $wpdb->posts.post_name, $wpdb->posts.post_type, $wpdb->posts.post_status, $wpdb->posts.post_parent, $wpdb->posts.post_date, $wpdb->posts.post_modified";
 	} # kill_query_fields()
-	
-	
-	/**
-	 * kill_query()
-	 *
-	 * @param string $where
-	 * @return string $where
-	 **/
+
+
+    /**
+     * kill_query()
+     *
+     * @param $in
+     * @internal param string $where
+     * @return string $where
+     */
 	
 	function kill_query($in) {
 		return ' AND ( 1 = 0 ) ';

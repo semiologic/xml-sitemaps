@@ -2,6 +2,8 @@
 /**
  * sitemap_xml
  *
+ * @property mixed stats
+ * @property mixed filter_backup
  * @package XML Sitemaps
  **/
 
@@ -554,7 +556,7 @@ class sitemap_xml {
 			
 			# fetch num posts per day
 			$date = $dates[0];
-			$day = split('-', $date->post_date);
+			$day = explode('-', $date->post_date);
 			
 			$query_vars = array();
 			
@@ -702,13 +704,17 @@ class sitemap_xml {
 			}
 		}
 	} # close()
-	
-	
-	/**
-	 * write()
-	 *
-	 * @return void
-	 **/
+
+
+    /**
+     * write()
+     *
+     * @param $loc
+     * @param null $lastmod
+     * @param null $changefreq
+     * @param null $priority
+     * @return void
+     */
 	
 	function write($loc, $lastmod = null, $changefreq = null, $priority = null) {
 		$o = '<url>' . "\n";
