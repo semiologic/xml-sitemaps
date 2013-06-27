@@ -65,6 +65,7 @@ class sitemap_xml {
 		$this->posts();
 		$this->categories();
 		$this->tags();
+        $this->authors();
 		$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		
@@ -119,7 +120,8 @@ class sitemap_xml {
 		$this->write(
 			$loc,
 			$stats->lastmod,
-			$stats->changefreq,
+            1,
+//			$stats->changefreq,
 			.8
 			);
 	} # home()
@@ -497,7 +499,75 @@ class sitemap_xml {
 		}
 	} # tags()
 	
-	
+
+    /**
+   	 * authors()
+   	 *
+   	 * @return void
+   	 **/
+
+   	function authors() {
+   		global $wpdb;
+   		global $wp_query;
+
+        $users = get_users( array(
+        	'who'      => 'authors'
+        ) );
+
+   		foreach ( $users as $user ) {
+   			$sql = "
+   				SELECT	MAX(CAST(posts.post_modified AS DATE)) as lastmod,
+   						CASE
+   						WHEN ( COUNT(posts.ID) = 0 )
+   						THEN
+   							0
+   						ELSE
+   							DATEDIFF(CAST(NOW() AS DATE), MIN(CAST(posts.post_date AS DATE)))
+   							/ COUNT(posts.ID)
+   						END as changefreq,
+   						COUNT(posts.ID) as num_posts
+   				FROM	$wpdb->posts as posts
+   				WHERE	posts.post_type = 'post'
+   				AND		posts.post_status = 'publish'
+   				AND		posts.post_password = ''
+   				AND     posts.post_author = $user->ID;
+   				";
+
+   			#dump($sql);
+
+   			$stats = $wpdb->get_row($sql);
+
+            $query_vars = array('author_name' => $user->user_nicename);
+
+          	$this->query($query_vars);
+
+          	$posts_per_page = $wp_query->query_vars['posts_per_page'];
+
+   			$loc = get_author_posts_url( $user->ID );
+
+   			$this->write(
+   				$loc,
+   				$stats->lastmod,
+   				$stats->changefreq,
+   				.2
+   				);
+
+   			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
+   				$this->set_location($loc);
+
+   				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
+   					$this->write(
+   						get_pagenum_link($i),
+   						$stats->lastmod,
+   						$stats->changefreq,
+   						.2
+   						);
+   				}
+   			}
+   		}
+   	} # authors()
+
+
 	/**
 	 * archives()
 	 *

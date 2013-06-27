@@ -49,6 +49,10 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 == Change Log ==
 
+= 1.8 =
+
+- Sitemap now includes author pages in file
+
 = 1.7.1 =
 
 - Rebuild sitemap if post is moved to trash
