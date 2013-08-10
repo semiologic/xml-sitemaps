@@ -424,7 +424,7 @@ EOS;
      * @return bool $success
      */
 	
-	function rm($dir) {
+	static function rm($dir) {
 		$dir = rtrim($dir, '/');
 		
 		if ( !file_exists($dir) )
