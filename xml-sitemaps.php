@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.8
+Version: 1.9
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.8');
+define('xml_sitemaps_version', '1.9');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -35,7 +35,34 @@ if ( !defined('xml_sitemaps_debug') )
  **/
 
 class xml_sitemaps {
-	/**
+    /**
+     * xml_sitemaps ()
+     */
+    function xml_sitemaps () {
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+
+        if ( intval(get_option('xml_sitemaps')) ) {
+        	if ( !xml_sitemaps_debug )
+        		add_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
+
+        	add_action('template_redirect', array($this, 'template_redirect'));
+        	add_action('save_post', array($this, 'save_post'));
+        	add_action('xml_sitemaps_ping', array($this, 'ping'));
+
+        	add_action('do_robots', array($this, 'do_robots'));
+        } else {
+        	add_action('admin_notices', array($this, 'inactive_notice'));
+        }
+
+        add_action('update_option_permalink_structure', array($this, 'reactivate'));
+        add_action('update_option_blog_public', array($this, 'reactivate'));
+        add_action('update_option_active_plugins', array($this, 'reactivate'));
+        add_action('after_db_upgrade', array($this, 'reactivate'));
+        add_action('flush_cache', array($this, 'reactivate'));
+    }
+
+    /**
 	 * do_robots()
 	 *
 	 * @return void
@@ -140,14 +167,14 @@ class xml_sitemaps {
 		wp_cache_add_non_persistent_groups(array('posts', 'post_meta'));
 		
 		# only keep fields involved in permalinks
-		add_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
+		add_filter('posts_fields_request', array($this, 'kill_query_fields'));
 		
 		# sitemap.xml
 		$sitemap = new sitemap_xml;
 		$return = $sitemap->generate();
 		
 		# restore fields
-		remove_filter('posts_fields_request', array('xml_sitemaps', 'kill_query_fields'));
+		remove_filter('posts_fields_request', array($this, 'kill_query_fields'));
 		
 		return $return;
 	} # generate()
@@ -236,14 +263,14 @@ EOS;
 	
 	function save_rewrite_rules() {
 		if ( !isset($GLOBALS['wp_rewrite']) )
-			$GLOBALS['wp_rewrite'] =& new WP_Rewrite;
+			$GLOBALS['wp_rewrite'] = new WP_Rewrite;
 		
 		if ( !function_exists('save_mod_rewrite_rules') || !function_exists('get_home_path') ) {
 			include_once ABSPATH . 'wp-admin/includes/admin.php';
 		}
 		
 		if ( !get_option('permalink_structure') || !intval(get_option('blog_public')) )
-			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+			remove_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
 		
 		return save_mod_rewrite_rules()
 			&& get_option('permalink_structure')
@@ -330,13 +357,13 @@ EOS;
 			
 			# insert rewrite rules
 			if ( $active && !xml_sitemaps_debug )
-				add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+				add_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
 			
 			$active &= xml_sitemaps::save_rewrite_rules();
 		}
 		
 		if ( !$active )
-			remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+			remove_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
 		
 		# save status
 		update_option('xml_sitemaps', intval($active));
@@ -370,7 +397,7 @@ EOS;
 		xml_sitemaps::rm(WP_CONTENT_DIR . '/sitemaps');
 		
 		# drop rewrite rules
-		remove_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
+		remove_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
 		xml_sitemaps::save_rewrite_rules();
 		
 		# reset status
@@ -397,7 +424,7 @@ EOS;
      * @return bool $success
      */
 	
-	static function rm($dir) {
+	function rm($dir) {
 		$dir = rtrim($dir, '/');
 		
 		if ( !file_exists($dir) )
@@ -464,30 +491,11 @@ EOS;
      * @return string $where
      */
 	
-	function kill_query($in) {
+	static function kill_query($in) {
 		return ' AND ( 1 = 0 ) ';
 	}
 } # xml_sitemaps
 
-register_activation_hook(__FILE__, array('xml_sitemaps', 'activate'));
-register_deactivation_hook(__FILE__, array('xml_sitemaps', 'deactivate'));
+$xml_sitemaps = new xml_sitemaps();
 
-if ( intval(get_option('xml_sitemaps')) ) {
-	if ( !xml_sitemaps_debug )
-		add_filter('mod_rewrite_rules', array('xml_sitemaps', 'rewrite_rules'));
-	
-	add_action('template_redirect', array('xml_sitemaps', 'template_redirect'));
-	add_action('save_post', array('xml_sitemaps', 'save_post'));
-	add_action('xml_sitemaps_ping', array('xml_sitemaps', 'ping'));
-	
-	add_action('do_robots', array('xml_sitemaps', 'do_robots'));
-} else {
-	add_action('admin_notices', array('xml_sitemaps', 'inactive_notice'));
-}
-
-add_action('update_option_permalink_structure', array('xml_sitemaps', 'reactivate'));
-add_action('update_option_blog_public', array('xml_sitemaps', 'reactivate'));
-add_action('update_option_active_plugins', array('xml_sitemaps', 'reactivate'));
-add_action('after_db_upgrade', array('xml_sitemaps', 'reactivate'));
-add_action('flush_cache', array('xml_sitemaps', 'reactivate'));
 ?>

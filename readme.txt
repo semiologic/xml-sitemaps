@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
 Requires at least: 3.1
-Tested up to: 3.5.1
+Tested up to: 3.6
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,15 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 
 == Change Log ==
+
+= 1.9 =
+
+- WP 3.6 compat
+- PHP 5.4 compat
+
+= 1.8.1 =
+
+- Fix assigning the return value of new by reference warning message
 
 = 1.8 =
 
