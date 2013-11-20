@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
 Requires at least: 3.1
-Tested up to: 3.6
+Tested up to: 3.7
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,12 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 
 == Change Log ==
+
+= 1.10 =
+
+- No longer add url to blog page if no posts have been published
+- Author links now check that author has at least 1 post or page
+- WP 3.7 compat
 
 = 1.9 =
 
