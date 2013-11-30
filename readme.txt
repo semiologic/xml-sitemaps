@@ -49,6 +49,10 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 == Change Log ==
 
+= 1.11 =
+
+- Fix incorrect admin message regarding Privacy/Search Engine Visibility Settings changed in WP 3.5
+
 = 1.10 =
 
 - No longer add url to blog page if no posts have been published

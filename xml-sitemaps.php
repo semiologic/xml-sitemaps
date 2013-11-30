@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.10
+Version: 1.11
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -22,7 +22,7 @@ http://www.opensource.org/licenses/gpl-2.0.php
 
 load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
 
-define('xml_sitemaps_version', '1.10');
+define('xml_sitemaps_version', '1.11');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -135,9 +135,10 @@ class xml_sitemaps {
 	function save_post($post_id) {
 		$post = get_post($post_id);
 		
-		# ignore revisions
-		if ( $post->post_type == 'revision' )
+		# ignore revisions for posts or attachments
+		if ( $post->post_type == 'revision' ) {
 			return;
+		}
 		
 		# ignore non-published data and password protected data
 		if ( ($post->post_status == 'publish' || $post->post_status == 'trash') && $post->post_password == '' ) {
@@ -312,12 +313,24 @@ EOS;
 						. '</div>' . "\n\n";
 				}
 			} elseif ( !intval(get_option('blog_public')) ) {
-				if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-privacy.php') === false ) {
-					echo '<div class="error">'
-						. '<p>'
-						. sprintf(__('XML Sitemaps is not active on your site because of your site\'s privacy settings (<a href="%s">Settings / Privacy</a>).', 'xml-sitemaps'), 'options-privacy.php')
-						. '</p>' . "\n"
-						. '</div>' . "\n\n";
+				global $wp_version;
+				if ( version_compare( $wp_version, '3.5.0', '>=' ) ) {
+					if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-reading.php') === false ) {
+						echo '<div class="error">'
+							. '<p>'
+							. sprintf(__('XML Sitemaps is not active on your site because of your site\'s Search Engine Visibility Settings (<a href="%s">Settings / Reading</a>).', 'xml-sitemaps'), 'options-reading.php')
+							. '</p>' . "\n"
+							. '</div>' . "\n\n";
+					}
+				}
+				else {
+					if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-privacy.php') === false ) {
+						echo '<div class="error">'
+							. '<p>'
+							. sprintf(__('XML Sitemaps is not active on your site because of your site\'s Privacy Settings (<a href="%s">Settings / Privacy</a>).', 'xml-sitemaps'), 'options-privacy.php')
+							. '</p>' . "\n"
+							. '</div>' . "\n\n";
+					}
 				}
 			} elseif ( !xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps')
 				|| !is_writable(ABSPATH . '.htaccess') ){
