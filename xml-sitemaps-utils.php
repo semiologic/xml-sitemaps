@@ -19,10 +19,10 @@ class sitemap_xml {
 	/**
 	 * sitemap_xml()
 	 *
-	 * @return void
-	 **/
+	 * @return \sitemap_xml
+	 */
 
-	function sitemap_xml() {
+	public function __construct() {
 		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid(rand());
 
 		register_shutdown_function(array(&$this, 'close'));
@@ -650,7 +650,7 @@ class sitemap_xml {
 			$posts_per_page = $wp_query->query_vars['posts_per_page'];
 
 			foreach ( $dates as $date ) {
-				$day = split('-', $date->post_date);
+				$day = explode('-', $date->post_date);
 				switch ( $archive_type ) {
 				case 'yearly':
 					$loc = get_year_link($day[0]);
@@ -869,4 +869,3 @@ class sitemap_xml {
 		$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI']['path'];
 	} # set_location()
 } # sitemap_xml
-?>

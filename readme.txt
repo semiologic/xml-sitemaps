@@ -1,9 +1,9 @@
 === XML Sitemaps ===
 Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
-Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, semiologic
+Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, sitemap.xml, semiologic
 Requires at least: 3.1
-Tested up to: 3.7
+Tested up to: 3.8
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,11 @@ It's generated only when explicitly requested, by visiting domain.com/sitemaps.x
 
 
 == Change Log ==
+
+= 1.11.1 =
+
+- Replaced deprecated PHP 5.3 function call
+- WP 3.8 compat
 
 = 1.11 =
 

@@ -3,20 +3,19 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.11
+Version: 1.11.1
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
 Domain Path: /lang
+License: Dual licensed under the MIT and GPLv2 licenses
 */
 
 /*
 Terms of use
 ------------
 
-This software is copyright Denis de Bernardy & Mike Koepke, and is distributed under the terms of the GPL license, v2.
-
-http://www.opensource.org/licenses/gpl-2.0.php
+This software is copyright Denis de Bernardy & Mike Koepke, and is distributed under the terms of the MIT and GPLv2 licenses.
 **/
 
 
@@ -38,7 +37,7 @@ class xml_sitemaps {
     /**
      * xml_sitemaps ()
      */
-    function xml_sitemaps () {
+	public function __construct() {
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
 
@@ -133,12 +132,12 @@ class xml_sitemaps {
      */
 
 	function save_post($post_id) {
-		$post = get_post($post_id);
-		
-		# ignore revisions for posts or attachments
-		if ( $post->post_type == 'revision' ) {
+		if ( wp_is_post_revision($post_id) || !current_user_can('edit_post', $post_id) )
 			return;
-		}
+
+		$post_id = (int) $post_id;
+		$post = get_post($post_id);
+
 		
 		# ignore non-published data and password protected data
 		if ( ($post->post_status == 'publish' || $post->post_status == 'trash') && $post->post_password == '' ) {
@@ -510,5 +509,3 @@ EOS;
 } # xml_sitemaps
 
 $xml_sitemaps = new xml_sitemaps();
-
-?>
