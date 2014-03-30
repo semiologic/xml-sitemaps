@@ -17,11 +17,10 @@ class sitemap_xml {
 
 
 	/**
-	 * sitemap_xml()
+	 * Constructor.
 	 *
-	 * @return \sitemap_xml
+	 *
 	 */
-
 	public function __construct() {
 		$this->file = WP_CONTENT_DIR . '/sitemaps/' . uniqid(rand());
 
@@ -531,7 +530,8 @@ class sitemap_xml {
    						END as changefreq,
    						COUNT(posts.ID) as num_posts
    				FROM	$wpdb->posts as posts
-   				WHERE	posts.post_status = 'publish'
+   				WHERE	posts.post_type = 'post'
+   				AND 	posts.post_status = 'publish'
    				AND		posts.post_password = ''
    				AND     posts.post_author = $user->ID;
    				";

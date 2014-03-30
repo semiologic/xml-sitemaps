@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.11.1
+Version: 1.12
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -19,9 +19,7 @@ This software is copyright Denis de Bernardy & Mike Koepke, and is distributed u
 **/
 
 
-load_plugin_textdomain('xml-sitemaps', false, dirname(plugin_basename(__FILE__)) . '/lang');
-
-define('xml_sitemaps_version', '1.11');
+define('xml_sitemaps_version', '1.12');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -34,32 +32,104 @@ if ( !defined('xml_sitemaps_debug') )
  **/
 
 class xml_sitemaps {
-    /**
-     * xml_sitemaps ()
-     */
+	/**
+	 * Plugin instance.
+	 *
+	 * @see get_instance()
+	 * @type object
+	 */
+	protected static $instance = NULL;
+
+	/**
+	 * URL to this plugin's directory.
+	 *
+	 * @type string
+	 */
+	public $plugin_url = '';
+
+	/**
+	 * Path to this plugin's directory.
+	 *
+	 * @type string
+	 */
+	public $plugin_path = '';
+
+	/**
+	 * Access this plugin’s working instance
+	 *
+	 * @wp-hook plugins_loaded
+	 * @return  object of this class
+	 */
+	public static function get_instance()
+	{
+		NULL === self::$instance and self::$instance = new self;
+
+		return self::$instance;
+	}
+
+	/**
+	 * Loads translation file.
+	 *
+	 * Accessible to other classes to load different language files (admin and
+	 * front-end for example).
+	 *
+	 * @wp-hook init
+	 * @param   string $domain
+	 * @return  void
+	 */
+	public function load_language( $domain )
+	{
+		load_plugin_textdomain(
+			$domain,
+			FALSE,
+			$this->plugin_path . 'lang'
+		);
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 *
+	 */
 	public function __construct() {
-        register_activation_hook(__FILE__, array($this, 'activate'));
-        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+		$this->plugin_url    = plugins_url( '/', __FILE__ );
+		$this->plugin_path   = plugin_dir_path( __FILE__ );
+		$this->load_language( 'xml-sitemaps' );
 
-        if ( intval(get_option('xml_sitemaps')) ) {
-        	if ( !xml_sitemaps_debug )
-        		add_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
-
-        	add_action('template_redirect', array($this, 'template_redirect'));
-        	add_action('save_post', array($this, 'save_post'));
-        	add_action('xml_sitemaps_ping', array($this, 'ping'));
-
-        	add_action('do_robots', array($this, 'do_robots'));
-        } else {
-        	add_action('admin_notices', array($this, 'inactive_notice'));
-        }
-
-        add_action('update_option_permalink_structure', array($this, 'reactivate'));
-        add_action('update_option_blog_public', array($this, 'reactivate'));
-        add_action('update_option_active_plugins', array($this, 'reactivate'));
-        add_action('after_db_upgrade', array($this, 'reactivate'));
-        add_action('flush_cache', array($this, 'reactivate'));
+		add_action( 'plugins_loaded', array ( $this, 'init' ) );
     }
+
+
+	/**
+	 * init()
+	 *
+	 * @return void
+	 **/
+
+	function init() {
+		// more stuff: register actions and filters
+		register_activation_hook(__FILE__, array($this, 'activate'));
+		register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+
+		if ( intval(get_option('xml_sitemaps')) ) {
+			if ( !xml_sitemaps_debug )
+		        add_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
+
+			add_action('template_redirect', array($this, 'template_redirect'));
+			add_action('save_post', array($this, 'save_post'));
+			add_action('xml_sitemaps_ping', array($this, 'ping'));
+
+			add_action('do_robots', array($this, 'do_robots'));
+		} else {
+			add_action('admin_notices', array($this, 'inactive_notice'));
+		}
+
+		add_action('update_option_permalink_structure', array($this, 'reactivate'));
+		add_action('update_option_blog_public', array($this, 'reactivate'));
+		add_action('update_option_active_plugins', array($this, 'reactivate'));
+		add_action('after_db_upgrade', array($this, 'reactivate'));
+		add_action('flush_cache', array($this, 'reactivate'));
+	}
 
     /**
 	 * do_robots()
@@ -445,7 +515,7 @@ EOS;
 		if ( is_file($dir) )
 			return unlink($dir);
 		
-		return xml_sitemaps::clean($dir) && rmdir($dir);
+		return xml_sitemaps::clean($dir) && @rmdir($dir);
 	} # rm()
 	
 	
@@ -508,4 +578,4 @@ EOS;
 	}
 } # xml_sitemaps
 
-$xml_sitemaps = new xml_sitemaps();
+$xml_sitemaps = xml_sitemaps::get_instance();
