@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, sitemap.xml, semiologic
 Requires at least: 3.1
-Tested up to: 3.8
+Tested up to: 3.9
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,13 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 
 == Change Log ==
+
+= 2.0 =
+
+- NEW Admin Settings
+- Optionally include/exclude archive, author, category and tag pages from the sitemap
+- Option to exclude individual pages
+- Ability to generate sitemap for mobile-only sites in mobile sitemap format.
 
 = 1.12 =
 

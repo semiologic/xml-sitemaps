@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 1.12
+Version: 2.0 dev
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -19,7 +19,7 @@ This software is copyright Denis de Bernardy & Mike Koepke, and is distributed u
 **/
 
 
-define('xml_sitemaps_version', '1.12');
+define('xml_sitemaps_version', '2.0');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -99,7 +99,6 @@ class xml_sitemaps {
 		add_action( 'plugins_loaded', array ( $this, 'init' ) );
     }
 
-
 	/**
 	 * init()
 	 *
@@ -129,6 +128,20 @@ class xml_sitemaps {
 		add_action('update_option_active_plugins', array($this, 'reactivate'));
 		add_action('after_db_upgrade', array($this, 'reactivate'));
 		add_action('flush_cache', array($this, 'reactivate'));
+
+		if ( is_admin() ) {
+            add_action('admin_menu', array($this, 'admin_menu'));
+			add_action('load-settings_page_xml-sitemaps', array($this, 'xml_sitemaps_admin'));
+        }
+	}
+
+	/**
+	* xml_sitemaps_admin()
+	*
+	* @return void
+	**/
+	function xml_sitemaps_admin() {
+		include_once $this->plugin_path . '/xml-sitemaps-admin.php';
 	}
 
     /**
@@ -576,6 +589,74 @@ EOS;
 	static function kill_query($in) {
 		return ' AND ( 1 = 0 ) ';
 	}
+
+	/**
+	 * get_options()
+	 *
+	 * @return array $options
+	 **/
+
+    static function get_options() {
+		static $o;
+
+		if ( !is_admin() && isset($o) )
+			return $o;
+
+		$o = get_option('xml_sitemaps');
+
+        if ( $o === false || !is_array($o) ) {
+			$o = xml_sitemaps::init_options();
+		}
+
+		return $o;
+	} # get_options()
+
+
+	/**
+	 * init_options()
+	 *
+	 * @return array $options
+	 **/
+
+	function init_options() {
+        $defaults = array(
+            'inc_authors' => true,
+	        'inc_categories' => true,
+	        'inc_tags' => true,
+	        'inc_archives' => true,
+            'exclude_pages' => '',
+	        'mobile_sitemap' => false,
+      	);
+
+        $o = get_option('xml_sitemaps');
+
+		if ( !$o )
+			$o  = $defaults;
+		else
+			$o = wp_parse_args($o, $defaults);
+
+		update_option('xml_sitemaps', $o);
+
+		return $o;
+	} # init_options()
+
+
+	/**
+	 * admin_menu()
+	 *
+	 * @return void
+	 **/
+
+	function admin_menu() {
+		add_options_page(
+			__('XML Sitemaps', 'xml-sitemaps'),
+			__('XML Sitemaps', 'xml-sitemaps'),
+			'manage_options',
+			'xml-sitemaps',
+			array('xml_sitemaps_admin', 'edit_options')
+			);
+	} # admin_menu()
+
 } # xml_sitemaps
 
 $xml_sitemaps = xml_sitemaps::get_instance();

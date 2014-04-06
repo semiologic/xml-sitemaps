@@ -15,6 +15,8 @@ class sitemap_xml {
 	var $blog_page_id;
 	var $posts_per_page;
 
+	var $mobile_sitemap;
+
 
 	/**
 	 * Constructor.
@@ -35,6 +37,10 @@ class sitemap_xml {
 	 **/
 
 	function generate() {
+		$opts = xml_sitemaps::get_options();
+		if ( $opts['mobile_sitemap'] )
+			$this->mobile_sitemap = true;
+
 		if ( !$this->open() )
 			return false;
 
@@ -60,12 +66,16 @@ class sitemap_xml {
 		$this->blog();
 
 		add_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
-		$this->pages();
+		$this->pages( $opts['exclude_pages'] );
 		$this->posts();
-		$this->categories();
-		$this->tags();
-        $this->authors();
-		$this->archives();
+		if ( $opts['inc_categories'] )
+			$this->categories();
+		if ( $opts['inc_tags'] )
+			$this->tags();
+		if ( $opts['inc_authors'] )
+            $this->authors();
+		if ( $opts['inc_archives'] )
+			$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 
 		#
@@ -116,13 +126,13 @@ class sitemap_xml {
 			GROUP BY posts.ID
 			");
 
-		$this->write(
-			$loc,
-			$stats->lastmod,
-            1,
-//			$stats->changefreq,
-			.8
-			);
+			$this->write(
+				$loc,
+				$stats->lastmod,
+	            1,
+	//			$stats->changefreq,
+				.8
+				);
 	} # home()
 
 
@@ -202,7 +212,7 @@ class sitemap_xml {
 	 * @return void
 	 **/
 
-	function pages() {
+	function pages( $exclude = '' ) {
 		global $wpdb;
 
 		$sql = "
@@ -254,6 +264,9 @@ class sitemap_xml {
 			AND		posts.post_password = ''
 			AND		redirect_url.post_id IS NULL
 			AND		( widgets_exclude.post_id IS NULL OR widgets_exception.post_id IS NOT NULL )"
+			. ( !empty( $exclude )
+				? " AND posts.ID NOT IN ({$exclude}) "
+				: "" )
 			. ( $this->front_page_id
 				? "
 			AND		posts.ID <> $this->front_page_id
@@ -714,8 +727,10 @@ class sitemap_xml {
 				? '<!-- Debug: XML Sitemaps ' . xml_sitemaps_version . ' -->'
 				: '<!-- Generator: XML Sitemaps ' . xml_sitemaps_version . ' -->'
 				) . "\n"
-			. '<?xml-stylesheet type="text/xsl" href="' . plugin_dir_url(__FILE__) . 'xml-sitemaps.xsl" ?>' . "\n"
-			. '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+			. ( $this->mobile_sitemap == false ? '<?xml-stylesheet type="text/xsl" href="' . plugin_dir_url(__FILE__) . 'xml-sitemaps.xsl" ?>' . "\n" : '')
+			. '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
+			. ( $this->mobile_sitemap == true ? ' xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"' : '')
+			. '>' . "\n";
 
 		fwrite($this->fp, $o);
 
@@ -793,31 +808,55 @@ class sitemap_xml {
      */
 
 	function write($loc, $lastmod = null, $changefreq = null, $priority = null) {
-		$o = '<url>' . "\n";
+		if ( $this->mobile_sitemap )
+			$o = $this->write_mobile($loc, $lastmod);
+		else {
+			$o = '<url>' . "\n";
 
-		foreach ( array('loc', 'lastmod', 'changefreq', 'priority') as $var ) {
-			if ( isset($$var) ) {
-				if ( $var == 'changefreq' && is_numeric($changefreq) ) {
-					if ( !$changefreq || $changefreq > 91 ) {
-						$changefreq = 'yearly';
-					} elseif ( $changefreq > 14) {
-						$changefreq = 'monthly';
-					} elseif ( $changefreq > 3.5 ) {
-						$changefreq = 'weekly';
-					} else {
-						$changefreq = 'daily';
+			foreach ( array('loc', 'lastmod', 'changefreq', 'priority') as $var ) {
+				if ( isset($$var) ) {
+					if ( $var == 'changefreq' && is_numeric($changefreq) ) {
+						if ( !$changefreq || $changefreq > 91 ) {
+							$changefreq = 'yearly';
+						} elseif ( $changefreq > 14) {
+							$changefreq = 'monthly';
+						} elseif ( $changefreq > 3.5 ) {
+							$changefreq = 'weekly';
+						} else {
+							$changefreq = 'daily';
+						}
 					}
+
+					$o .= "<$var>" . htmlentities($$var, ENT_COMPAT, 'UTF-8') . "</$var>\n";
 				}
-
-				$o .= "<$var>" . htmlentities($$var, ENT_COMPAT, 'UTF-8') . "</$var>\n";
 			}
-		}
 
-		$o .= '</url>' . "\n";
+			$o .= '</url>' . "\n";
+		}
 
 		fwrite($this->fp, $o);
 	} # write()
 
+
+	/**
+	* write_mobile()
+	*
+	* @param $loc
+	* @return void
+	*/
+
+	function write_mobile($loc, $lastmod = null) {
+
+		$o = '<url>' . "\n";
+		$o .= '<loc>' . htmlentities($loc, ENT_COMPAT, 'UTF-8') . '</loc>' . "\n";
+		$o .= '<lastmod>' . htmlentities($lastmod, ENT_COMPAT, 'UTF-8') . '</lastmod>' . "\n";
+		$o .= '<mobile:mobile/>' . "\n";
+
+		$o .= '</url>' . "\n";
+
+		return $o;
+
+	} # write()
 
 	/**
 	 * query()
