@@ -55,6 +55,7 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 - Optionally include/exclude archive, author, category and tag pages from the sitemap
 - Option to exclude individual pages
 - Ability to generate sitemap for mobile-only sites in mobile sitemap format.
+- WP 3.9 Compat
 
 = 1.12 =
 
