@@ -1,39 +1,103 @@
-# XML Sitemaps pot file.
-# Copyright (C) 2010 Mesoconcepts <http://www.mesoconcepts.com>
+# Copyright (C) 2014 XML Sitemaps
 # This file is distributed under the same license as the XML Sitemaps package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 1.6.1\n"
-"Report-Msgid-Bugs-To: https://tickets.semiologic.com\n"
-"POT-Creation-Date: 2010-01-13 17:27+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Project-Id-Version: XML Sitemaps 2.0\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/xml-sitemaps\n"
+"POT-Creation-Date: 2014-04-22 16:10:34+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: 8bit\n"
 
-#: xml-sitemaps-info.php:2
+#: xml-sitemaps-admin.php:104
+msgid "Settings saved."
+msgstr ""
+
+#: xml-sitemaps-admin.php:125
+msgid "XML Sitemaps Settings"
+msgstr ""
+
+#: xml-sitemaps-admin.php:131
+msgid "Include Archive Pages"
+msgstr ""
+
+#: xml-sitemaps-admin.php:139
+msgid "Check to include archive pages in your sitemap."
+msgstr ""
+
+#: xml-sitemaps-admin.php:147
+msgid "Include Author Pages"
+msgstr ""
+
+#: xml-sitemaps-admin.php:155
+msgid "Check to include author pages in your sitemap."
+msgstr ""
+
+#: xml-sitemaps-admin.php:162
+msgid "Include Category Pages"
+msgstr ""
+
+#: xml-sitemaps-admin.php:170
+msgid "Check to include category pages in your sitemap."
+msgstr ""
+
+#: xml-sitemaps-admin.php:177
+msgid "Include Tag Pages"
+msgstr ""
+
+#: xml-sitemaps-admin.php:185
+msgid "Check to include tag pages in your sitemap."
+msgstr ""
+
+#: xml-sitemaps-admin.php:192
+msgid "Exclude Pages"
+msgstr ""
+
+#: xml-sitemaps-admin.php:196
+msgid ""
+"IDs of pages you do not wish to include in your sitemap separated by commas "
+"(','):"
+msgstr ""
+
+#: xml-sitemaps-admin.php:207
+msgid "Generate Mobile Sitemap"
+msgstr ""
+
+#: xml-sitemaps-admin.php:215
+msgid ""
+"Check if this plugin is installed on an mobile-only site, such as m.example."
+"com or example.mobi."
+msgstr ""
+
+#: xml-sitemaps-admin.php:224
+msgid "Save Changes"
+msgstr ""
+
+#. #-#-#-#-#  xml-sitemaps.pot (XML Sitemaps 2.0)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: xml-sitemaps-info.php:2 xml-sitemaps.php:652 xml-sitemaps.php:653
 msgid "XML Sitemaps"
 msgstr ""
 
+#. #-#-#-#-#  xml-sitemaps.pot (XML Sitemaps 2.0)  #-#-#-#-#
+#. Description of the plugin/theme
 #: xml-sitemaps-info.php:3
 msgid ""
 "Automatically generates XML Sitemaps for your site and notifies search "
 "engines when they're updated."
 msgstr ""
 
-#: xml-sitemaps.php:269
+#: xml-sitemaps.php:380
 msgid ""
 "XML Sitemaps requires MySQL 4.1.1 or later. It's time to <a href=\"http://"
 "www.semiologic.com/resources/wp-basics/wordpress-server-requirements/"
 "\">change hosts</a> if yours doesn't want to upgrade."
 msgstr ""
 
-#: xml-sitemaps.php:275
+#: xml-sitemaps.php:386
 msgid ""
 "Safe mode or open_basedir restriction on your server prevents XML Sitemaps "
 "from creating the folders that it needs. It's time to <a href=\"http://www."
@@ -41,22 +105,38 @@ msgid ""
 "hosts</a> if yours doesn't want to upgrade."
 msgstr ""
 
-#: xml-sitemaps.php:282
-#, php-format
+#: xml-sitemaps.php:393
 msgid ""
 "XML Sitemaps requires that you enable a fancy url structure, under <a href="
 "\"%s\">Settings / Permalinks</a>."
 msgstr ""
 
-#: xml-sitemaps.php:290
-#, php-format
+#: xml-sitemaps.php:403
 msgid ""
-"XML Sitemaps is not active on your site because of your site's privacy "
-"settings (<a href=\"%s\">Settings / Privacy</a>)."
+"XML Sitemaps is not active on your site because of your site's Search Engine "
+"Visibility Settings (<a href=\"%s\">Settings / Reading</a>)."
 msgstr ""
 
-#: xml-sitemaps.php:298
+#: xml-sitemaps.php:412
+msgid ""
+"XML Sitemaps is not active on your site because of your site's Privacy "
+"Settings (<a href=\"%s\">Settings / Privacy</a>)."
+msgstr ""
+
+#: xml-sitemaps.php:421
 msgid ""
 "XML Sitemaps is not active on your site. Please make the following file and "
 "folder writable by the server:"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://www.semiologic.com/software/xml-sitemaps/"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Denis de Bernardy & Mike Koepke"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://www.getsemiologic.com"
 msgstr ""
