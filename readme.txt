@@ -49,6 +49,10 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
+= 2.0.2 =
+
+- Reactivate sitemap logic upon WP upgrade
+
 = 2.0.1 =
 
 - Fix localization
