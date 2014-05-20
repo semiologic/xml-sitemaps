@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 2.0.2
+Version: 2.0.3
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -396,8 +396,8 @@ EOS;
 						. '</div>' . "\n\n";
 				}
 			} elseif ( !intval(get_option('blog_public')) ) {
-				global $wp_version;
-				if ( version_compare( $wp_version, '3.5.0', '>=' ) ) {
+				// since WP 3.5
+				if ( class_exists( 'WP_Image_Editor' ) ) {
 					if ( strpos($_SERVER['REQUEST_URI'], 'wp-admin/options-reading.php') === false ) {
 						echo '<div class="error">'
 							. '<p>'

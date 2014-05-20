@@ -49,6 +49,10 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
+= 2.0.3 =
+
+- Use more full proof WP version check to alter plugin behavior instead of relying on $wp_version constant.
+
 = 2.0.2 =
 
 - Reactivate sitemap logic upon WP upgrade
