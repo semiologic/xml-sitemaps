@@ -98,6 +98,8 @@ class xml_sitemaps_admin {
       	update_option('xml_sitemaps',
 	        compact('inc_archives', 'inc_authors', 'inc_categories', 'inc_tags', 'exclude_pages', 'mobile_sitemap'));
 
+		xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps');
+
 		echo '<div class="updated fade">' . "\n"
 			. '<p>'
 				. '<strong>'
@@ -136,7 +138,7 @@ class xml_sitemaps_admin {
                 . checked((bool) $options['inc_archives'], true, false)
                 . ' />'
             . '&nbsp;'
-            . __('Check to include archive pages in your sitemap.', 'xml-sitemaps')
+            . __('Check to include date archive pages, such as YYYY or YYYY/MM, in your sitemap.', 'xml-sitemaps')
             . '</label>'
             . '</td>' . "\n"
             . '</tr>' . "\n";

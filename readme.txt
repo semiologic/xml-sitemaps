@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, sitemap.xml, semiologic
 Requires at least: 3.1
-Tested up to: 3.9
+Tested up to: 4.0
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -23,6 +23,14 @@ Likewise, there are no options screen because there are set automatically. The X
 Pings occur automatically, on an hourly basis, if the sitemap file is updated.
 
 Lastly, and contrary to the zillions of plugins that try to do the same as this one, this plugin will use the WP internals to determine the number of blog, category and tag pages on your site. This means it'll play well with the likes of custom query string or [Semiologic SEO](http://www.semiologic.com/software/sem-seo/).
+
+= Configuration =
+
+Starting with version 2.0 there is now the ability to control the inclusion or exclusion of date archives (years and months), author, category and tags pages in your sitemap.
+
+Additionally specific pages can also be excluded by entering their page IDs.
+
+Go to Settings->XML Sitemaps to update settings.
 
 = Help Me! =
 
@@ -48,6 +56,12 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 
 == Change Log ==
+
+= 2.1 =
+
+- Changing of the plugin Settings now will cause regeneration of the sitemap
+- Fix 'Strict Standards: Non-static method' warning messages when in debug mode
+- WordPress 4.0 compatibility
 
 = 2.0.3 =
 
