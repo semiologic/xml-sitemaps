@@ -62,8 +62,8 @@ class sitemap_xml {
 		$this->posts_per_page = get_option('posts_per_page');
 		$this->stats = (object) null;
 
-		$this->home();
-		$this->blog();
+		$this->home( $opts['exclude_pages'] );
+		$this->blog( $opts['exclude_pages'] );
 
 		add_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
 		$this->pages( $opts['exclude_pages'] );
@@ -96,11 +96,13 @@ class sitemap_xml {
 	/**
 	 * home()
 	 *
+	 * @param string $exclude
 	 * @return void
-	 **/
+	 */
 
-	function home() {
-		if ( !$this->front_page_id ) return;
+	function home( $exclude = '' ) {
+		if ( !$this->front_page_id )
+			return;
 
 		global $wpdb;
 
@@ -139,10 +141,11 @@ class sitemap_xml {
 	/**
 	 * blog()
 	 *
+	 * @param string $exclude
 	 * @return void
 	 **/
 
-	function blog() {
+	function blog( $exclude = '' ) {
 		global $wpdb;
 		global $wp_query;
 
@@ -152,6 +155,10 @@ class sitemap_xml {
 
 			$loc = user_trailingslashit(get_option('home'));
 		} else {
+			$exclude_pages = explode( ',', $exclude );
+			if ( in_array( $this->blog_page_id, $exclude_pages ) )
+				return;
+
 			$loc = apply_filters('the_permalink', get_permalink($this->blog_page_id));
 		}
 
@@ -190,7 +197,7 @@ class sitemap_xml {
 				$query_vars['page_id'] = $this->blog_page_id;
 			$this->query($query_vars);
 
-			if ( $wp_query->max_num_pages > 1 ) {
+			if ( $wp_query->max_num_pages > 1 && xml_sitemaps_paged ) {
 				$this->set_location($loc);
 
 				for ( $i = 2; $i <= $wp_query->max_num_pages; $i++ ) {
@@ -209,8 +216,9 @@ class sitemap_xml {
 	/**
 	 * pages()
 	 *
+	 * @param string $exclude
 	 * @return void
-	 **/
+	 */
 
 	function pages( $exclude = '' ) {
 		global $wpdb;
@@ -426,7 +434,7 @@ class sitemap_xml {
 
 			$posts_per_page = $wp_query->query_vars['posts_per_page'];
 
-			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page && xml_sitemaps_paged ) {
 				$this->set_location($loc);
 
 				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
@@ -500,7 +508,7 @@ class sitemap_xml {
 				.2
 				);
 
-			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
+			if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page && xml_sitemaps_paged ) {
 				$this->set_location($loc);
 
 				for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
@@ -570,7 +578,7 @@ class sitemap_xml {
 					.2
 					);
 
-				if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page ) {
+				if ( $posts_per_page > 0 && $stats->num_posts > $posts_per_page && xml_sitemaps_paged ) {
 					$this->set_location($loc);
 
 					for ( $i = 2; $i <= ceil($stats->num_posts / $posts_per_page); $i++ ) {
@@ -683,7 +691,7 @@ class sitemap_xml {
 					.1
 					);
 
-				if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page ) {
+				if ( $posts_per_page > 0 && $date->num_posts > $posts_per_page && xml_sitemaps_paged ) {
 					$this->set_location($loc);
 
 					for ( $i = 2; $i <= ceil($date->num_posts / $posts_per_page); $i++ ) {

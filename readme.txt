@@ -57,6 +57,11 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
+= 2.2 =
+
+- The blog page is not added if the page is set in the Excluded Pages list and the blog page is not the Home Page.
+- Multi-paged entries are no longer included in the sitemap.   This can be re-enabled if define('xml_sitemaps_paged', true); is set in wp-config
+
 = 2.1 =
 
 - Changing of the plugin Settings now will cause regeneration of the sitemap
