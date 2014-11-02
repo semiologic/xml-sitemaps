@@ -57,6 +57,10 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
+= 2.2.1 =
+
+- Fix PHP strict warning upon deactivating the plugin.
+
 = 2.2 =
 
 - The blog page is not added if the page is set in the Excluded Pages list and the blog page is not the Home Page.
