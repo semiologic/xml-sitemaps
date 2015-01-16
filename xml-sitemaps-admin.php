@@ -78,14 +78,11 @@ class xml_sitemaps_admin {
 		
 		check_admin_referer('xml_sitemaps');
 
-      	$inc_archives = isset($_POST['inc_archives']) ? $_POST['inc_archives'] : false;
-		$inc_authors = isset($_POST['inc_authors']) ? $_POST['inc_authors'] : false;
-		$inc_categories = isset($_POST['inc_categories']) ? $_POST['inc_categories'] : false;
-		$inc_tags = isset($_POST['inc_tags']) ? $_POST['inc_tags'] : false;
+		foreach ( array('inc_archives', 'inc_authors', 'inc_categories', 'inc_tags', 'mobile_sitemap',
+			          'empty_author') as $var )
+			$$var = isset($_POST[$var]);
 
 		$exclude_pages = stripslashes($_POST['exclude_pages']);
-
-		$mobile_sitemap = isset($_POST['mobile_sitemap']) ? $_POST['mobile_sitemap'] : false;
 
 		$exclude_pages = preg_replace( array(
 		    '/[^\d,]/',    // Matches anything that's not a comma or number.
@@ -95,8 +92,11 @@ class xml_sitemaps_admin {
 		  ),
 		  '', (string) $exclude_pages);
 
+		$version = xml_sitemaps_version;
+
       	update_option('xml_sitemaps',
-	        compact('inc_archives', 'inc_authors', 'inc_categories', 'inc_tags', 'exclude_pages', 'mobile_sitemap'));
+	        compact('inc_archives', 'inc_authors', 'inc_categories', 'inc_tags',
+		        'exclude_pages', 'mobile_sitemap', 'version', 'empty_author'));
 
 		xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps');
 
@@ -155,6 +155,21 @@ class xml_sitemaps_admin {
 				. ' />'
 			. '&nbsp;'
 			. __('Check to include author pages in your sitemap.', 'xml-sitemaps')
+			. '</label>'
+			. '</td>' . "\n"
+			. '</tr>' . "\n";
+
+		echo '<tr>' . "\n"
+			. '<th scope="row">'
+			. __('Empty Author Pages', 'xml-sitemaps')
+			. '</th>' . "\n"
+			. '<td>'
+			. '<label>'
+			. '<input type="checkbox" name="empty_author"'
+				. checked((bool) $options['empty_author'], true, false)
+				. ' />'
+			. '&nbsp;'
+			. __('Check to include author page in your sitemap if the author(s) has not published any pages or posts yet.', 'xml-sitemaps')
 			. '</label>'
 			. '</td>' . "\n"
 			. '</tr>' . "\n";

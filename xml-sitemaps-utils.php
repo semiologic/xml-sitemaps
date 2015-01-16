@@ -73,7 +73,7 @@ class sitemap_xml {
 		if ( $opts['inc_tags'] )
 			$this->tags();
 		if ( $opts['inc_authors'] )
-            $this->authors();
+            $this->authors( $opts['empty_author'] );
 		if ( $opts['inc_archives'] )
 			$this->archives();
 		remove_filter('posts_where_request', array('xml_sitemaps', 'kill_query'));
@@ -530,7 +530,7 @@ class sitemap_xml {
    	 * @return void
    	 **/
 
-   	function authors() {
+   	function authors( $inc_empty_authors = false ) {
    		global $wpdb;
    		global $wp_query;
 
@@ -561,7 +561,7 @@ class sitemap_xml {
 
    			$stats = $wpdb->get_row($sql);
 
-			if ( $stats != null && $stats->num_posts > 0) {
+			if ( $inc_empty_authors || ( $stats != null && $stats->num_posts > 0 ) ) {
 
 				$query_vars = array('author_name' => $user->user_nicename);
 
