@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 2.3
+Version: 2.3.1
 Author: Denis de Bernardy & Mike Koepke
 Author URI: http://www.getsemiologic.com
 Text Domain: xml-sitemaps
@@ -19,7 +19,7 @@ This software is copyright Denis de Bernardy & Mike Koepke, and is distributed u
 **/
 
 
-define('xml_sitemaps_version', '2.3');
+define('xml_sitemaps_version', '2.3.1');
 
 if ( !defined('xml_sitemaps_debug') )
 	define('xml_sitemaps_debug', false);
@@ -116,8 +116,6 @@ class xml_sitemaps {
 		if ( intval(get_option('xml_sitemaps')) ) {
 			if ( !xml_sitemaps_debug )
 		        add_filter('mod_rewrite_rules', array($this, 'rewrite_rules'));
-
-			xml_sitemaps::get_options();
 
 			add_action('template_redirect', array($this, 'template_redirect'));
 			add_action('save_post', array($this, 'save_post'));
@@ -610,12 +608,11 @@ EOS;
 
 		$o = get_option('xml_sitemaps');
 
-        if ( $o === false || !is_array($o) || !isset($o['version']) ) {
+        if ( $o === false || !is_array($o) ) {
 			$o = xml_sitemaps::init_options();
 		}
-
-	    if ( !isset($o['version']) || version_compare( xml_sitemaps_version, $o['version'], '>' ) )
-	  			$o = xml_sitemaps::init_options();
+		elseif ( !isset($o['version']) || version_compare( xml_sitemaps_version, $o['version'], '>' ) )
+            $o = xml_sitemaps::init_options();
 
 		return $o;
 	} # get_options()
@@ -641,22 +638,14 @@ EOS;
 
         $o = get_option('xml_sitemaps');
 
-		if ( !$o )
+		if ( $o === false || !is_array($o) )
 			$updated_opts  = $defaults;
 		else
 			$updated_opts = wp_parse_args($o, $defaults);
 
 		if ( !isset( $o['version'] )) {
-			$hostname = php_uname( 'n' );
-			if ( in_array( $hostname, array('orthohost.com', 'vps.orthohosting.com')) ) {
-				$updated_opts['inc_authors'] = false;
-				$updated_opts['inc_categories'] = false;
-				$updated_opts['inc_tags'] = false;
-				$updated_opts['inc_archives'] = false;
-			}
 			xml_sitemaps::clean(WP_CONTENT_DIR . '/sitemaps');
 		}
-
 
 		$updated_opts['version'] = xml_sitemaps_version;
 

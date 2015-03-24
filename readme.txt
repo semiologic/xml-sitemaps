@@ -18,7 +18,7 @@ The XML Sitemaps plugin for WordPress will automatically generate XML Sitemaps f
 
 Contrary to other plugins that generate sitemap files, this one will add a rewrite rule and store your cached sitemaps in the wp-content/sitemaps folder.
 
-Likewise, there are no options screen because there are set automatically. The XML Sitemaps plugin automatically assigns the rate of updates and the weight based on statistics collected on your site.
+The XML Sitemaps plugin automatically assigns the rate of updates and the weight based on statistics collected on your site.
 
 Pings occur automatically, on an hourly basis, if the sitemap file is updated.
 
@@ -52,14 +52,18 @@ If you require more dedicated assistance, consider using [Semiologic Pro](http:/
 
 Actually, it is. But it's not refreshed each time you save your posts and pages. Doing so would be far too resource intensive on large sites.
 
-It's generated only when explicitly requested by visiting domain.com/sitemap.xml which is then cached in a physical file located in the /wp-content/sitemaps folder; until it needs to be refreshed once again.
+It's generated only when explicitly requested by visiting domain.com/sitemap.xml, which is then cached in a physical file located in the /wp-content/sitemaps folder; until it needs to be refreshed once again.
 
 
 == Change Log ==
 
+= 2.3.1 =
+
+- Settings were not being preserved in some cases.   Should be resolved now.
+
 = 2.3 =
 
-- New option to include author page in sitemap if they haven't published a page or paost.
+- New option to include author page in sitemap if they haven't published a page or post.
 - WordPress 4.1 compat.
 
 = 2.2.1 =
