@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: http://www.semiologic.com/partners/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, sitemap.xml, semiologic
 Requires at least: 3.1
-Tested up to: 4.1
+Tested up to: 4.2
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -56,6 +56,11 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 
 == Change Log ==
+
+= 2.4 =
+
+- Fixed settings being reset upon plugin activation message.
+- WordPress 4.2 compat.
 
 = 2.3.1 =
 
