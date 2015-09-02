@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <!--
-	Copyright (c) 2009 Mesoconcepts <http://www.mesoconcepts.com>
+	Copyright (c) 2009-2015 Semiologic <https://www.semiologic.com>
 	GNU/GPL licensed
 -->
-
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -43,7 +41,7 @@
 				</tr>
 			</xsl:for-each>
 		</table>
-		<p>Generator: <a href="http://www.semiologic.com/software/xml-sitemaps/">XML Sitemaps plugin</a>.</p>
+		<p>Generator: <a href="https://www.semiologic.com/software/xml-sitemaps/">XML Sitemaps plugin</a>.</p>
 	</body>
 </html>
 </xsl:template>
