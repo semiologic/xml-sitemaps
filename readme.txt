@@ -3,7 +3,7 @@ Contributors: Denis-de-Bernardy, Mike_Koepke
 Donate link: https://www.semiologic.com/donate/
 Tags: google-sitemap, sitemaps, xml-sitemaps, xml-sitemap, google, sitemap.xml, semiologic
 Requires at least: 3.1
-Tested up to: 4.3
+Tested up to: 4.7.4
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -55,6 +55,14 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 
 == Change Log ==
+
+= 2.6 =
+
+- Custom Posts now included in the sitemap
+- Individual posts can be excluded now.  Previously only pages could be
+- Update urls for Google and Bing sitemap pinging
+- WP 4.7.x compat
+
 
 = 2.5 =
 
