@@ -85,7 +85,8 @@ class xml_sitemaps_admin {
 				'inc_categories',
 				'inc_tags',
 				'mobile_sitemap',
-				'empty_author'
+				'empty_author',
+				'inc_custom_posts',
 			) as $var
 		) {
 			$$var = isset( $_POST[ $var ] );
@@ -105,7 +106,7 @@ class xml_sitemaps_admin {
 
 		update_option( 'xml_sitemaps',
 			compact( 'inc_archives', 'inc_authors', 'inc_categories', 'inc_tags',
-				'exclude_pages', 'mobile_sitemap', 'version', 'empty_author' ) );
+				'exclude_pages', 'mobile_sitemap', 'version', 'empty_author', 'inc_custom_posts' ) );
 
 		xml_sitemaps::clean( WP_CONTENT_DIR . '/sitemaps' );
 
@@ -210,6 +211,21 @@ class xml_sitemaps_admin {
 		     . ' />'
 		     . '&nbsp;'
 		     . __( 'Check to include tag pages in your sitemap.', 'xml-sitemaps' )
+		     . '</label>'
+		     . '</td>' . "\n"
+		     . '</tr>' . "\n";
+
+		echo '<tr>' . "\n"
+		     . '<th scope="row">'
+		     . __( 'Include Custom Posts', 'xml-sitemaps' )
+		     . '</th>' . "\n"
+		     . '<td>'
+		     . '<label>'
+		     . '<input type="checkbox" name="inc_custom_posts"'
+		     . checked( (bool) $options['inc_custom_posts'], true, false )
+		     . ' />'
+		     . '&nbsp;'
+		     . __( 'Check to include custom posts in your sitemap.', 'xml-sitemaps' )
 		     . '</label>'
 		     . '</td>' . "\n"
 		     . '</tr>' . "\n";

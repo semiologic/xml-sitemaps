@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 2.6
+Version: 3.0
 Author: Denis de Bernardy & Mike Koepke
 Author URI: https://www.semiologic.com
 Text Domain: xml-sitemaps
@@ -19,7 +19,7 @@ This software is copyright Denis de Bernardy & Mike Koepke, and is distributed u
 **/
 
 
-define( 'xml_sitemaps_version', '2.6' );
+define( 'xml_sitemaps_version', '3.0' );
 
 if ( ! defined( 'xml_sitemaps_debug' ) ) {
 	define( 'xml_sitemaps_debug', false );
@@ -680,7 +680,7 @@ EOS;
 			'mobile_sitemap'     => false,
 			'version'            => xml_sitemaps_version,
 			'empty_author'       => false,
-			'ortho_defaults_set' => false,
+			'inc_custom_posts'   => true,
 		);
 
 		$o = get_option( 'xml_sitemaps' );
@@ -693,20 +693,6 @@ EOS;
 
 		if ( ! isset( $o['version'] ) ) {
 			xml_sitemaps::clean( WP_CONTENT_DIR . '/sitemaps' );
-		}
-
-		$hostname = php_uname( 'n' );
-		if ( $updated_opts['ortho_defaults_set'] == false
-		     && in_array( $hostname, array( 'orthohost.com', 'vps.orthohosting.com' ) )
-		) {
-			$updated_opts['inc_authors']        = false;
-			$updated_opts['inc_categories']     = false;
-			$updated_opts['inc_tags']           = false;
-			$updated_opts['inc_archives']       = false;
-			$updated_opts['ortho_defaults_set'] = true;
-
-			xml_sitemaps::clean( WP_CONTENT_DIR . '/sitemaps' );
-
 		}
 
 		$updated_opts['version'] = xml_sitemaps_version;

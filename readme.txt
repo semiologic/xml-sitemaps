@@ -56,9 +56,9 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
-= 2.6 =
+= 3.0 =
 
-- Custom Posts now included in the sitemap
+- Custom Posts now included in the sitemap w/ Setting to exclude
 - Individual posts can be excluded now.  Previously only pages could be
 - Update urls for Google and Bing sitemap pinging
 - WP 4.7.x compat

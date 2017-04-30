@@ -75,7 +75,9 @@ class sitemap_xml {
 
 		$this->posts( 'post', true, $opts['exclude_pages'] );
 
-		$this->custom_posts( '', $opts['exclude_pages'] );
+		if ( $opts['inc_custom_posts'] ) {
+			$this->custom_posts( '', $opts['exclude_pages'] );
+		}
 
 		if ( $opts['inc_categories'] ) {
 			$this->categories();
