@@ -56,6 +56,10 @@ It's generated only when explicitly requested by visiting domain.com/sitemap.xml
 
 == Change Log ==
 
+= 3.0.1 =
+
+- PHP 7.x compat
+
 = 3.0 =
 
 - Custom Posts now included in the sitemap w/ Setting to exclude

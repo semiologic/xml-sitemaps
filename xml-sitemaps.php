@@ -3,7 +3,7 @@
 Plugin Name: XML Sitemaps
 Plugin URI: http://www.semiologic.com/software/xml-sitemaps/
 Description: Automatically generates XML Sitemaps for your site and notifies search engines when they're updated.
-Version: 3.0
+Version: 3.0.1
 Author: Denis de Bernardy & Mike Koepke
 Author URI: https://www.semiologic.com
 Text Domain: xml-sitemaps
@@ -410,10 +410,10 @@ EOS;
 						'xml-sitemaps' )
 				     . '</p>' . "\n"
 				     . '</div>' . "\n\n";
-			} elseif ( ( @ini_get( 'safe_mode' ) || @ini_get( 'open_basedir' ) ) && ! wp_mkdir_p( WP_CONTENT_DIR . '/sitemaps' ) ) {
+			} elseif ( @ini_get( 'open_basedir' ) && ! wp_mkdir_p( WP_CONTENT_DIR . '/sitemaps' ) ) {
 				echo '<div class="error">'
 				     . '<p>'
-				     . __( 'Safe mode or open_basedir restriction on your server prevents XML Sitemaps from creating the folders that it needs. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.',
+				     . __( 'open_basedir restriction on your server prevents XML Sitemaps from creating the folders that it needs. It\'s time to <a href="http://www.semiologic.com/resources/wp-basics/wordpress-server-requirements/">change hosts</a> if yours doesn\'t want to upgrade.',
 						'xml-sitemaps' )
 				     . '</p>' . "\n"
 				     . '</div>' . "\n\n";
